@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LexGuard AI</string>
+    <string name="tagline">AI-Powered Legal First Response</string>
+    <string name="offline_title">No Connection</string>
+    <string name="offline_message">Please check your internet connection and ensure the LexGuard server is running.</string>
+    <string name="retry">🔄  Try Again</string>
+</resources>

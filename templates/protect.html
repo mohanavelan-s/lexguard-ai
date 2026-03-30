@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protect Me - LexGuard</title>
+  <link rel="stylesheet" href="/static/protect.css">
+</head>
+<body>
+
+<script> window.chtlConfig = { chatbotId: "7631258385" } </script>
+<script async data-id="7631258385" id="chtl-script" type="text/javascript" src="https://chatling.ai/js/embed.js"></script>
+<div id="stealthOverlay" onclick="toggleStealth()">
+  <div class="stealth-text">Double tap to unlock</div>
+</div>
+
+<div id="activeBanner">🔴 EVIDENCE RECORDING IN PROGRESS</div>
+
+<button class="back-btn" onclick="window.location.href='/'">⬅ Back</button>
+<button class="stealth-btn" onclick="toggleStealth()">👁️ Stealth Mode</button>
+
+<h1>🛡️ Protect Me</h1>
+
+<p class="voiceHint">
+  Say <b>"Protect Me"</b> to start • Say <b>"Stop Protection"</b> to save evidence
+</p>
+
+<div class="controls">
+  <button id="startBtn">Start Protection</button>
+  <button id="stopBtn" disabled>End & Save</button>
+</div>
+
+<div class="status-panel">
+    <p id="status">System Idle</p>
+    <p id="micStatus">🎤 Mic: Off</p>
+    <p id="geoStatus">📍 Locating...</p>
+</div>
+
+<div id="progressBar">
+  <div id="progressFill"></div>
+</div>
+
+<p id="thinking">AI is analyzing legal risks...</p>
+
+<div id="chatBox">
+    <div class="system-msg">System Ready. Waiting for activation...</div>
+</div>
+
+<footer>
+  <p>LexGuard uses local processing. No audio is sent to the cloud.</p>
+</footer>
+
+<script src="/static/protect.js"></script>
+</body>
+</html>

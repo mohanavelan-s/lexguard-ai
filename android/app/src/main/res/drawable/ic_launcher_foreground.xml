@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon foreground: Shield shape representing LexGuard -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Shield outline -->
+    <path
+        android:fillColor="#4A9EFF"
+        android:pathData="M54,24 L30,34 L30,54 C30,70 40,84 54,88 C68,84 78,70 78,54 L78,34 Z" />
+
+    <!-- Shield inner -->
+    <path
+        android:fillColor="#1B2735"
+        android:pathData="M54,28 L34,36.5 L34,54 C34,68 42.5,80.5 54,84 C65.5,80.5 74,68 74,54 L74,36.5 Z" />
+
+    <!-- Checkmark / AI symbol -->
+    <path
+        android:fillColor="#4A9EFF"
+        android:strokeWidth="2"
+        android:pathData="M44,56 L50,62 L64,48"
+        android:strokeColor="#4A9EFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+</vector>

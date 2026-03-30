@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Top Lawyers - LexGuard AI</title>
+    <link rel="stylesheet" href="/static/lawyers.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">LexGuard <span>AI</span></div>
+        <button class="back-btn" onclick="window.location.href='/'">
+            <i class="fas fa-arrow-left"></i> Dashboard
+        </button>
+    </nav>
+
+    <header class="hero">
+        <h1>Connect with India's <span class="highlight">Top Legal Minds</span></h1>
+        <p>AI-Powered Matching • Verified Advocates • Blockchain Records</p>
+        
+        <div class="ai-match-container">
+            <div class="ai-input-wrapper">
+                <i class="fas fa-robot ai-icon"></i>
+                <textarea id="caseInput" 
+                          placeholder="🤖 AI Match: Describe your problem here... (e.g., 'My landlord is harassing me for rent' or 'I need a divorce lawyer in Delhi')" 
+                          onkeyup="calculateAIMatch()"></textarea>
+            </div>
+            <div class="typing-indicator" id="aiThinking">
+                <span>⚡ AI is analyzing legal keywords...</span>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="input-group">
+                <i class="fas fa-map-marker-alt"></i>
+                <input type="text" id="cityInput" placeholder="City (e.g., Chennai)">
+            </div>
+            
+            <div class="input-group">
+                <i class="fas fa-gavel"></i>
+                <select id="specInput">
+                    <option value="">All Specializations</option>
+                    <option value="Criminal">Criminal Defense</option>
+                    <option value="Divorce">Divorce & Family</option>
+                    <option value="Property">Property & Real Estate</option>
+                    <option value="Corporate">Corporate Law</option>
+                    <option value="Cyber">Cyber Crime</option>
+                    <option value="Civil">Civil Rights</option>
+                </select>
+            </div>
+
+            <button onclick="findLawyers()" class="search-btn">Filter Results</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-header">
+            <h2>Recommended Advocates</h2>
+            <span class="badge">Live Status</span>
+        </div>
+        
+        <div id="lawyersGrid" class="grid">
+            <p style="color: #aaa; text-align: center; width: 100%;">Loading AI recommendations...</p>
+        </div>
+    </div>
+
+    <script src="/static/lawyers.js"></script>
+</body>
+</html>

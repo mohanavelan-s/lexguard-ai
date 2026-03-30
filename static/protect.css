@@ -1,0 +1,132 @@
+body {
+  margin: 0;
+  font-family: 'Inter', Arial, sans-serif; /* Modern font */
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  text-align: center;
+  overflow-x: hidden;
+}
+
+/* STEALTH MODE */
+#stealthOverlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: black;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.stealth-text {
+  color: #1a1a1a; /* Almost invisible */
+  position: absolute;
+  top: 50%; width: 100%;
+  text-align: center;
+  font-size: 12px;
+}
+
+/* BUTTONS */
+button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  margin: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#startBtn { background: #00b894; color: white; }
+#stopBtn { background: #d63031; color: white; }
+.stealth-btn { background: #636e72; color: white; position: absolute; right: 15px; top: 15px; }
+.back-btn { background: rgba(255,255,255,0.1); color: white; position: absolute; left: 15px; top: 15px; }
+
+button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+
+/* ACTIVE BANNER */
+#activeBanner {
+  display: none;
+  background: #d63031;
+  color: white;
+  padding: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: 0 0 15px #d63031;
+  animation: pulseWarning 1s infinite;
+}
+
+@keyframes pulseWarning {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* MIC STATUS PULSE */
+.mic-active {
+  color: #55efc4 !important;
+  text-shadow: 0 0 10px #55efc4;
+  animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.1); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* CHAT BOX */
+#chatBox {
+  height: 300px;
+  width: 90%;
+  max-width: 600px;
+  margin: 20px auto;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 15px;
+  overflow-y: auto;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+}
+
+/* TACTICAL CARDS (AI) */
+.ai {
+  background: rgba(9, 132, 227, 0.2);
+  border-left: 4px solid #0984e3;
+  padding: 12px;
+  margin: 8px 0 8px auto;
+  border-radius: 4px;
+  width: fit-content;
+  max-width: 85%;
+  font-family: 'Courier New', monospace;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* TALKER BUBBLES */
+.talker {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  width: fit-content;
+  max-width: 80%;
+  color: #dfe6e9;
+}
+
+.system-msg {
+    text-align: center;
+    color: #b2bec3;
+    font-size: 0.8em;
+    font-style: italic;
+    margin: 10px 0;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

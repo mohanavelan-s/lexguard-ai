@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}LexGuard AI | Dashboard{% endblock %}
+
+{% block extra_head %}
+<script> window.chtlConfig = { chatbotId: "7631258385" } </script>
+<script async data-id="7631258385" id="chtl-script" type="text/javascript"
+    src="https://chatling.ai/js/embed.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🛡️ LexGuard AI</h1>
+        <p>Your Intelligent Legal Protection System</p>
+    </header>
+
+    <!-- Feature Grid -->
+    <div class="grid">
+
+        <div class="card" onclick="location.href='/legal-advisor'">
+            <div class="icon">⚖️</div>
+            <h3>Legal Advisor</h3>
+            <p>Understand Indian law with AI-powered guidance</p>
+        </div>
+
+        <div class="card" onclick="location.href='/cases'">
+            <div class="icon">📚</div>
+            <h3>Past Case Matcher</h3>
+            <p>Explore similar cases & previous judgments</p>
+        </div>
+        <div class="card" onclick="location.href='/scanner'">
+            <div class="icon">📄</div>
+            <h3>Document Scanner</h3>
+            <p>Scan documents, detect risks & get safer alternatives</p>
+        </div>
+        <div class="card" onclick="location.href='/lawyers'">
+            <div class="icon">👨‍⚖️</div>
+            <h3>Lawyer Connect</h3>
+            <p>Connect with real lawyers for professional help</p>
+        </div>
+
+        <div class="card" onclick="location.href='/static/case_lookup.html'">
+            <div class="icon">🔍</div>
+            <h3>Case Status Lookup</h3>
+            <p>Check official case status via eCourts portal</p>
+        </div>
+
+        <div class="card alert" onclick="location.href='/protect'">
+            <div class="icon">🚨</div>
+            <h3>Protect Me</h3>
+            <p>Emergency voice-based legal protection mode</p>
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>⚠️ For educational & informational purposes only</p>
+    </footer>
+
+</div>
+{% endblock %}

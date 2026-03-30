@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LexGuard AI{% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* ---- Top Navbar ---- */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px;
+            background: rgba(15, 15, 25, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(74, 158, 255, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-navbar .brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .top-navbar .brand:hover {
+            opacity: 0.9;
+        }
+
+        .auth-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .auth-links .welcome-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .auth-links .welcome-text strong {
+            color: #00c6ff;
+        }
+
+        .auth-links a {
+            color: #00c6ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 7px 18px;
+            border: 1px solid rgba(0, 198, 255, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-links a:hover {
+            background: rgba(0, 198, 255, 0.12);
+            border-color: #00c6ff;
+        }
+
+        .auth-links a.btn-logout {
+            color: #f87171;
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .auth-links a.btn-logout:hover {
+            background: rgba(248, 113, 113, 0.12);
+            border-color: #f87171;
+        }
+
+        .lang-dropdown {
+            background: rgba(15, 15, 25, 0.8);
+            color: #00c6ff;
+            border: 1px solid rgba(0, 198, 255, 0.3);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-size: 0.85rem;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .lang-dropdown:hover {
+            border-color: #00c6ff;
+            background: rgba(0, 198, 255, 0.1);
+        }
+
+        .lang-dropdown option {
+            background: #1a1a2e;
+            color: #f5f5f5;
+        }
+
+        @media (max-width: 600px) {
+            .top-navbar {
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px 16px;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+        <a href="/" class="brand">🛡️ LexGuard AI</a>
+        <div class="auth-links">
+            <!-- Language Selector -->
+            <select id="langSelector" class="lang-dropdown" title="Select Language">
+                <option value="en" {% if session.get('lang', 'en' )=='en' %}selected{% endif %}>🌐 English</option>
+                <option value="hi" {% if session.get('lang')=='hi' %}selected{% endif %}>🇮🇳 Hindi</option>
+                <option value="ta" {% if session.get('lang')=='ta' %}selected{% endif %}>🇮🇳 Tamil</option>
+            </select>
+
+            {% if session.get("user_id") %}
+            <span class="welcome-text">Welcome, <strong>{{ session.get("name") }}</strong></span>
+            {% if session.get("role") == "lawyer" %}
+            <a href="{{ url_for('lawyer_dashboard') }}">Dashboard</a>
+            {% else %}
+            <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+            {% endif %}
+            <a href="{{ url_for('settings') }}">⚙️ Settings</a>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+            {% else %}
+            <a href="{{ url_for('login_page') }}">Login</a>
+            <a href="{{ url_for('register_page') }}">Register</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    {% block extra_scripts %}{% endblock %}
+
+    <!-- Language Selection + Page Auto-Translation JS -->
+    <script>
+        // --- Language dropdown handler ---
+        document.getElementById('langSelector').addEventListener('change', async function () {
+            const lang = this.value;
+            try {
+                await fetch('/set-language', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lang: lang })
+                });
+                window.location.reload();
+            } catch (e) {
+                console.error('Language switch failed:', e);
+            }
+        });
+
+        // --- Auto-translate page on load if lang != 'en' ---
+        (async function autoTranslatePage() {
+            try {
+                const res = await fetch('/get-lang');
+                const { lang } = await res.json();
+                if (lang === 'en') return; // No translation needed
+
+                // Collect all visible text nodes (skip scripts, styles, selects)
+                const skipTags = new Set(['SCRIPT', 'STYLE', 'SELECT', 'OPTION', 'TEXTAREA', 'INPUT', 'CODE', 'PRE']);
+                const textNodes = [];
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function (node) {
+                        if (skipTags.has(node.parentElement?.tagName)) return NodeFilter.FILTER_REJECT;
+                        if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                });
+
+                while (walker.nextNode()) {
+                    textNodes.push(walker.currentNode);
+                }
+
+                if (textNodes.length === 0) return;
+
+                // Extract text content
+                const texts = textNodes.map(n => n.textContent.trim());
+
+                // Send batch for translation (process in chunks of 30 to avoid huge payloads)
+                const chunkSize = 30;
+                for (let i = 0; i < texts.length; i += chunkSize) {
+                    const chunk = texts.slice(i, i + chunkSize);
+                    const tRes = await fetch('/translate-batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ texts: chunk })
+                    });
+                    const { translations } = await tRes.json();
+
+                    // Replace text nodes with translated content
+                    for (let j = 0; j < translations.length; j++) {
+                        const nodeIdx = i + j;
+                        if (nodeIdx < textNodes.length && translations[j]) {
+                            // Preserve leading/trailing whitespace from original
+                            const original = textNodes[nodeIdx].textContent;
+                            const leadingSpace = original.match(/^\s*/)[0];
+                            const trailingSpace = original.match(/\s*$/)[0];
+                            textNodes[nodeIdx].textContent = leadingSpace + translations[j] + trailingSpace;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Auto-translate failed:', e);
+            }
+        })();
+    </script>
+</body>
+
+</html>

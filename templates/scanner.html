@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Document Scanner | LexGuard AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <button class="back-btn" onclick="window.location.href='/'">⬅ Back</button>
+
+    <div class="scanner-wrapper">
+
+        <h1>📄 Document Scanner</h1>
+        <p class="subtitle">Upload a legal document and instantly detect risky clauses</p>
+
+        <div class="upload-card">
+            <input type="file" id="fileInput">
+            <button class="scan-btn" onclick="scan()">Scan & Analyze</button>
+        </div>
+
+        <div id="loader" class="loader" style="display:none;">
+            <div class="spinner"></div>
+            <p>Analyzing document…</p>
+        </div>
+
+        <div id="heatmap" class="heatmap" style="display:none;">
+            <div class="heat high">🔴 High: <span id="high">0</span></div>
+            <div class="heat medium">🟡 Medium: <span id="medium">0</span></div>
+            <div class="heat low">🟢 Low: <span id="low">0</span></div>
+        </div>
+
+        <div id="results"></div>
+
+    </div>
+
+    <script>
+        async function scan() {
+            const file = document.getElementById("fileInput").files[0];
+            if (!file) return alert("Upload a PDF");
+
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("results").innerHTML = "";
+            document.getElementById("heatmap").style.display = "none";
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                const res = await fetch("/api/scan", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await res.json();
+                document.getElementById("loader").style.display = "none";
+
+                if (!data.success || data.error) {
+                    document.getElementById("results").innerHTML = `<div class="risk-card high"><h3>Error</h3><p>${data.error || 'An unexpected error occurred'}</p></div>`;
+                    return;
+                }
+
+                if (data.heatmap) {
+                    document.getElementById("high").innerText = data.heatmap.high;
+                    document.getElementById("medium").innerText = data.heatmap.medium;
+                    document.getElementById("low").innerText = data.heatmap.low;
+                    document.getElementById("heatmap").style.display = "flex";
+                }
+
+                if (data.clauses) {
+                    data.clauses.forEach(c => {
+                        const card = document.createElement("div");
+                        card.className = `risk-card ${c.risk.toLowerCase()}`;
+                        card.innerHTML = `
+                    <h3>${c.risk_title}</h3>
+                    <p class="impact">💥 ${c.impact}</p>
+                    <p class="suggestion">💡 ${c.suggestion}</p>
+                    <details>
+                        <summary>View clause</summary>
+                        <p>${c.full_text}</p>
+                    </details>
+                `;
+                        document.getElementById("results").appendChild(card);
+                    });
+                }
+            } catch (err) {
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("results").innerHTML = `<div class="risk-card high"><h3>Connection Error</h3><p>${err.message}</p></div>`;
+            }
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,232 @@
+/* ============================================
+   LEXGUARD AI THEME - CASES MODULE
+   ============================================ */
+
+/* 1. Global Reset & Theme Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  /* Matching the deep radial gradient from the dashboard */
+  background: radial-gradient(circle at top, #1b2735, #090a0f);
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 0;
+}
+
+/* 2. Header Styles */
+.header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.header h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  /* Matching the LexGuard logo/text aesthetic */
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  color: #b0c4de; /* Muted blue from dashboard text */
+  margin-top: 10px;
+  font-size: 1rem;
+}
+
+.back-link {
+  display: inline-block;
+  color: #4a9eff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  transition: color 0.3s ease;
+}
+
+.back-link:hover {
+  color: #ffffff;
+}
+
+/* 3. Search & Filter Bar - LexGuard Style */
+.pastcases-search-section {
+  /* Using the specific card background from the UI */
+  background: linear-gradient(145deg, #1a2332, #2a3b52);
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 40px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.pastcases-search-section input,
+.pastcases-search-section select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 2px solid #3a4b62;
+  background: #0f1419; /* Deep contrast input background */
+  color: #ffffff;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.pastcases-search-section input:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+
+.primary-btn {
+  background: linear-gradient(145deg, #2563eb, #1e40af);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 15px 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+}
+
+/* 4. Results Grid & Case Cards */
+.cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.case-card {
+  /* Matching the LexGuard dashboard card gradient */
+  background: linear-gradient(145deg, #141e30, #243b55);
+  border-radius: 20px;
+  padding: 30px;
+  transition: all 0.35s ease;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid transparent;
+}
+
+.case-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border-color: #4a9eff;
+}
+
+.case-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+
+.case-meta {
+  font-size: 0.85rem;
+  color: #4a9eff; /* LexGuard Accent Blue */
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.case-summary {
+  font-size: 0.9rem;
+  color: #d1d9e6; /* Softer contrast text from dashboard */
+  line-height: 1.6;
+  margin-bottom: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.case-outcome {
+  background: rgba(74, 158, 255, 0.1);
+  color: #4a9eff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  display: inline-block;
+}
+
+/* 5. Modal / Overlay Analysis View */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(15px); /* Glossy blur effect from Scanner UI */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(145deg, #1a2332, #2a3b52);
+  max-width: 800px;
+  width: 90%;
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid #4a9eff;
+  box-shadow: 0 0 30px rgba(74, 158, 255, 0.2);
+  position: relative;
+}
+
+.close-modal {
+  position: absolute;
+  top: 20px;
+  right: 25px;
+  font-size: 2rem;
+  color: #4a9eff;
+  cursor: pointer;
+}
+
+/* 6. Loading Spinner */
+.loading-indicator {
+  text-align: center;
+  padding: 50px;
+}
+
+.spinner {
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #4a9eff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 7. Footer / Disclaimer */
+.footer {
+  margin-top: 60px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #8899aa;
+}

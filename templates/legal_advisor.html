@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Legal Advisor | LexGuard AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <script> window.chtlConfig = { chatbotId: "7631258385" } </script>
+    <script async data-id="7631258385" id="chtl-script" type="text/javascript"
+        src="https://chatling.ai/js/embed.js"></script>
+    <div class="container">
+
+        <!-- Header -->
+        <header class="header">
+            <h1>⚖️ Legal Advisor</h1>
+            <p>Get general information about Indian laws and your legal rights</p>
+            <button class="back-btn" onclick="window.location.href='/'">⬅ Back to Dashboard</button>
+        </header>
+
+        <!-- Question Input Section -->
+        <div class="legal-input-section">
+            <h2>💬 Ask Your Legal Question</h2>
+            <textarea id="questionInput"
+                placeholder="e.g., What are my rights as a tenant? Can I file for divorce? What should I do if a cheque bounces?"
+                rows="4"></textarea>
+            <div class="input-actions">
+                <button id="voiceBtn" class="voice-btn" title="Click to speak your question">🎤</button>
+                <button id="askButton" class="primary-btn">📖 Explain My Rights</button>
+            </div>
+        </div>
+
+        <style>
+            /* Voice button styles */
+            .input-actions {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                margin-top: 10px;
+            }
+
+            .voice-btn {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                border: 2px solid #4a90d9;
+                background: #f0f4ff;
+                font-size: 22px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                flex-shrink: 0;
+            }
+
+            .voice-btn:hover {
+                background: #dce7fa;
+                transform: scale(1.05);
+            }
+
+            .voice-btn.recording {
+                background: #e74c3c;
+                border-color: #c0392b;
+                animation: pulse 1s infinite;
+            }
+
+            .voice-btn:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+
+            /* Export PDF Button */
+            .export-btn {
+                margin-top: 16px;
+                padding: 10px 24px;
+                background: linear-gradient(90deg, #0072ff, #00c6ff);
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                font-weight: 600;
+                font-family: 'Poppins', sans-serif;
+                cursor: pointer;
+                transition: opacity 0.3s;
+            }
+
+            .export-btn:hover {
+                opacity: 0.85;
+            }
+
+            .export-btn:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+        </style>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing your question...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="resultsSection" class="results-section" style="display: none;">
+
+            <!-- Context Info -->
+            <div id="contextInfo" class="info-box"></div>
+
+            <!-- Main Legal Information -->
+            <div id="legalContent" class="legal-content">
+                <h2 id="legalTitle" class="legal-title"></h2>
+
+                <div class="section">
+                    <h3>Key Information:</h3>
+                    <div id="keyPoints"></div>
+                </div>
+
+                <!-- Law References -->
+                <div class="section">
+                    <h3>📖 Relevant Laws / Acts (for reference):</h3>
+                    <div id="lawReferences" class="law-references"></div>
+                </div>
+
+                <!-- What Next -->
+                <div id="whatNextSection" class="section" style="display: none;">
+                    <h3>🔍 What Can You Do Next?</h3>
+                    <p class="subtitle">These are general options available, not recommendations:</p>
+                    <ul id="whatNextList"></ul>
+                </div>
+
+                <!-- Disclaimer -->
+                <div id="disclaimer" class="disclaimer-box"></div>
+
+                <!-- Export PDF Button -->
+                <button id="exportPdfBtn" class="export-btn" style="display: none;">📄 Export as PDF</button>
+            </div>
+
+            <!-- No Match Message -->
+            <div id="noMatchContent" class="no-match-content" style="display: none;">
+                <div class="info-box">
+                    <h3>ℹ️ Topic Not Covered Yet</h3>
+                    <p id="noMatchMessage"></p>
+                    <p><strong>Available Topics:</strong></p>
+                    <p id="availableTopics" class="available-topics"></p>
+                </div>
+                <div class="disclaimer-box" id="noMatchDisclaimer"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const questionInput = document.getElementById('questionInput');
+        const askButton = document.getElementById('askButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsSection = document.getElementById('resultsSection');
+        const legalContent = document.getElementById('legalContent');
+        const noMatchContent = document.getElementById('noMatchContent');
+
+        askButton.addEventListener('click', async () => {
+            const question = questionInput.value.trim();
+
+            if (!question) {
+                alert('⚠️ Please enter a question to get legal information.');
+                return;
+            }
+
+            // Show loading
+            loadingIndicator.style.display = 'block';
+            resultsSection.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/legal', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                loadingIndicator.style.display = 'none';
+                resultsSection.style.display = 'block';
+
+                if (data.success && data.matched) {
+                    // Show matched content
+                    legalContent.style.display = 'block';
+                    noMatchContent.style.display = 'none';
+
+                    // Context info
+                    document.getElementById('contextInfo').innerHTML = `
+                    <p>ℹ️ Based on your question, this generally relates to <strong>${data.title}</strong> under Indian law.</p>
+                    <p class="keyword-match">Matched using keywords related to: '${data.keyword}'</p>
+                `;
+
+                    // Title
+                    document.getElementById('legalTitle').textContent = `📚 ${data.title}`;
+
+                    // Key points
+                    document.getElementById('keyPoints').innerHTML = data.answer;
+
+                    // Law references
+                    const lawReferencesHtml = data.law_reference.map(law => `
+                    <details class="law-detail">
+                        <summary><strong>${law.name}</strong> — ${law.section}</summary>
+                        <div class="law-description">
+                            <p><strong>What this law says:</strong></p>
+                            <p>${law.description}</p>
+                        </div>
+                    </details>
+                `).join('');
+                    document.getElementById('lawReferences').innerHTML = lawReferencesHtml;
+
+                    // What next
+                    if (data.what_next && data.what_next.length > 0) {
+                        document.getElementById('whatNextSection').style.display = 'block';
+                        const whatNextHtml = data.what_next.map(item => `<li>${item}</li>`).join('');
+                        document.getElementById('whatNextList').innerHTML = whatNextHtml;
+                    } else {
+                        document.getElementById('whatNextSection').style.display = 'none';
+                    }
+
+                    // Disclaimer
+                    document.getElementById('disclaimer').innerHTML = `<p>${data.disclaimer}</p>`;
+
+                    // Store data for PDF export
+                    lastAdviceData = {
+                        title: data.title,
+                        answer: data.answer,
+                        what_next: data.what_next || [],
+                        disclaimer: data.disclaimer,
+                        law_reference: data.law_reference || []
+                    };
+
+                } else if (data.success && !data.matched) {
+                    // Show no match content
+                    legalContent.style.display = 'none';
+                    noMatchContent.style.display = 'block';
+
+                    document.getElementById('noMatchMessage').textContent = data.message;
+                    document.getElementById('availableTopics').textContent = data.available_topics;
+                    document.getElementById('noMatchDisclaimer').innerHTML = `<p>${data.disclaimer}</p>`;
+
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error occurred'));
+                }
+
+            } catch (error) {
+                loadingIndicator.style.display = 'none';
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Allow Enter key to submit (Shift+Enter for new line)
+        questionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askButton.click();
+            }
+        });
+
+        // ==========================================================
+        //  VOICE-TO-TEXT MODULE (Isolated — does NOT touch askButton)
+        // ==========================================================
+        (function initVoiceInput() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            const input = document.getElementById('questionInput');
+
+            // Check browser support for SpeechRecognition
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = 'Voice input not supported in this browser';
+                return;
+            }
+
+            // Create recognition instance with required settings
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-IN';
+
+            let isRecording = false;
+
+            // Toggle recording on mic button click
+            voiceBtn.addEventListener('click', () => {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+
+            // Visual feedback: turn red when recording starts
+            recognition.onstart = () => {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+            };
+
+            // Insert transcribed text into input (does NOT auto-submit)
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                // Append to existing text (space-separated) so user can combine voice + typed input
+                input.value = input.value ? input.value + ' ' + transcript : transcript;
+            };
+
+            // Revert button when recording stops
+            recognition.onend = () => {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+            };
+
+            // Handle errors gracefully without crashing the page
+            recognition.onerror = (event) => {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+
+                if (event.error === 'not-allowed') {
+                    alert('Microphone permission denied. Please allow microphone access in your browser settings.');
+                } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    console.warn('Speech recognition error:', event.error);
+                }
+            };
+
+            // Keyboard shortcut: Ctrl + Shift + V to start voice input
+            document.addEventListener("keydown", function (event) {
+                if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === "v") {
+                    event.preventDefault();
+                    if (recognition && !isRecording) {
+                        recognition.start();
+                    }
+                }
+            });
+        })();
+
+        // ==========================================================
+        //  PDF EXPORT MODULE (Isolated — does NOT touch askButton)
+        // ==========================================================
+        let lastAdviceData = null; // Stores last matched result for export
+
+        // Patch: capture data when results are shown
+        const origAskHandler = askButton.onclick;
+        const exportBtn = document.getElementById('exportPdfBtn');
+
+        // Show export button when results are displayed
+        const observer = new MutationObserver(() => {
+            if (legalContent.style.display !== 'none' && lastAdviceData) {
+                exportBtn.style.display = 'inline-block';
+            } else {
+                exportBtn.style.display = 'none';
+            }
+        });
+        observer.observe(legalContent, { attributes: true, attributeFilter: ['style'] });
+
+        exportBtn.addEventListener('click', async () => {
+            if (!lastAdviceData) return;
+
+            exportBtn.disabled = true;
+            exportBtn.textContent = '⏳ Generating PDF...';
+
+            try {
+                const response = await fetch('/export-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastAdviceData)
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'LexGuard_Advice.pdf';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else {
+                    alert('PDF generation failed.');
+                }
+            } catch (e) {
+                alert('Export error: ' + e.message);
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = '📄 Export as PDF';
+            }
+        });
+
+        // ==========================================================
+        //  AUTO-TRANSLATE UI (runs on page load if lang != 'en')
+        // ==========================================================
+        (async function autoTranslatePage() {
+            try {
+                const res = await fetch('/get-lang');
+                const { lang } = await res.json();
+                if (lang === 'en') return;
+
+                const skipTags = new Set(['SCRIPT', 'STYLE', 'SELECT', 'OPTION', 'TEXTAREA', 'INPUT', 'CODE', 'PRE']);
+                const textNodes = [];
+                const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function (node) {
+                        if (skipTags.has(node.parentElement?.tagName)) return NodeFilter.FILTER_REJECT;
+                        if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                });
+                while (walker.nextNode()) textNodes.push(walker.currentNode);
+                if (textNodes.length === 0) return;
+
+                const texts = textNodes.map(n => n.textContent.trim());
+                const chunkSize = 30;
+                for (let i = 0; i < texts.length; i += chunkSize) {
+                    const chunk = texts.slice(i, i + chunkSize);
+                    const tRes = await fetch('/translate-batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ texts: chunk })
+                    });
+                    const { translations } = await tRes.json();
+                    for (let j = 0; j < translations.length; j++) {
+                        const idx = i + j;
+                        if (idx < textNodes.length && translations[j]) {
+                            const orig = textNodes[idx].textContent;
+                            textNodes[idx].textContent = orig.match(/^\s*/)[0] + translations[j] + orig.match(/\s*$/)[0];
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Auto-translate failed:', e);
+            }
+        })();
+    </script>
+
+</body>
+
+</html>

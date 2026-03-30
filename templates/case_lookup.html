@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Status Lookup | LexGuard AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Dark Theme for Case Lookup ── */
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #f5f5f5;
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0 10px;
+        }
+
+        .header h1 {
+            color: #f5f5f5;
+        }
+
+        .header p {
+            color: #b0c4de;
+        }
+
+        .back-link {
+            color: #00c6ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .case-container {
+            background-color: rgba(25, 25, 35, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            width: 420px;
+            margin: 30px auto 40px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .case-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #f5f5f5;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        .case-container input,
+        .case-container select {
+            width: 100%;
+            padding: 10px;
+            margin: 4px 0;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background-color: #2a2a3a;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
+        .case-container input::placeholder {
+            color: #aaa;
+        }
+
+        .case-container input:focus,
+        .case-container select:focus {
+            outline: none;
+            border-color: #00c6ff;
+        }
+
+        .case-container button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #0072ff, #00c6ff);
+            color: white;
+            font-weight: bold;
+            font-size: 1.05rem;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+
+        .case-container button:hover {
+            opacity: 0.85;
+        }
+
+        /* Error box */
+        .error-box {
+            display: none;
+            background: rgba(220, 38, 38, 0.15);
+            border: 1px solid #f87171;
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+        }
+
+        .error-box p {
+            margin: 4px 0;
+        }
+
+        /* Info box */
+        .info-box-lookup {
+            display: none;
+            background: rgba(0, 114, 255, 0.1);
+            border: 1px solid #3b82f6;
+            color: #93c5fd;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-top: 18px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .info-box-lookup strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #bfdbfe;
+        }
+
+        .info-box-lookup b {
+            color: #e2e8f0;
+        }
+
+        /* Result Box */
+        .result-box {
+            display: none;
+            background: rgba(0, 114, 255, 0.08);
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #22c55e;
+            margin-bottom: 14px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .result-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            font-weight: 500;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            width: fit-content;
+        }
+
+        .result-note {
+            margin-top: 14px;
+            font-size: 0.85rem;
+            color: #93c5fd;
+            border-top: 1px solid rgba(59, 130, 246, 0.3);
+            padding-top: 12px;
+        }
+
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 12px;
+            margin-top: 12px;
+            color: #bbb;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <h1>🔍 Case Status Lookup</h1>
+        <p>Demo Case Status Engine — Check your case status instantly</p>
+        <button class="back-btn" onclick="window.location.href='/'">⬅ Back to Dashboard</button>
+    </header>
+
+    <!-- Lookup Form wrapped in dark-themed case-container -->
+    <div class="case-container">
+        <h2>📋 Enter Case Details</h2>
+
+        <!-- Error display -->
+        <div id="errorBox" class="error-box"></div>
+
+        <form id="caseLookupForm" autocomplete="off">
+
+            <!-- Case Type -->
+            <div class="form-group">
+                <label for="caseType">Case Type</label>
+                <select id="caseType">
+                    <option value="civil">Civil</option>
+                    <option value="criminal">Criminal</option>
+                    <option value="family">Family</option>
+                    <option value="consumer">Consumer</option>
+                    <option value="labor">Labor</option>
+                    <option value="writ">Writ Petition</option>
+                    <option value="appeal">Appeal</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Case Number -->
+            <div class="form-group">
+                <label for="caseNumber">Case Number</label>
+                <input type="text" id="caseNumber" placeholder="e.g., 12345">
+            </div>
+
+            <!-- Filing Year -->
+            <div class="form-group">
+                <label for="filingYear">Filing Year</label>
+                <input type="text" id="filingYear" placeholder="e.g., 2024" maxlength="4">
+            </div>
+
+            <!-- Court Complex -->
+            <div class="form-group">
+                <label for="courtComplex">Court Complex</label>
+                <input type="text" id="courtComplex" placeholder="e.g., Chennai District Court">
+            </div>
+
+            <!-- Submit -->
+            <button type="submit">🔎 Check Case Status</button>
+        </form>
+
+        <!-- Result display area -->
+        <div id="resultBox" class="result-box"></div>
+
+        <!-- Info box -->
+        <div id="infoBox" class="info-box-lookup">
+            <strong>ℹ️ Demo Case Numbers:</strong>
+            Try <b>1234</b> (Pending), <b>5678</b> (Disposed), or <b>9999</b> (Adjourned).
+            <br>Any other number will return "Under Review" status.
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer">
+            ⚠️ This is a demo case status engine. Official integration may require authorized judicial APIs.
+        </div>
+    </div>
+
+    <!-- Isolated JS for case lookup — unchanged -->
+    <script src="/static/js/case_lookup.js"></script>
+
+</body>
+
+</html>
