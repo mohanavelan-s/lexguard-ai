@@ -1,5 +1,4 @@
 flask
-faiss-cpu
 googletrans==4.0.0-rc.1
 httpcore==0.9.1
 httpx==0.13.3
@@ -13,8 +12,5 @@ reportlab
 requests
 resend
 SQLAlchemy>=2.0,<3
-sentence-transformers
-torch
-transformers
 werkzeug
 psycopg[binary]>=3.1,<3.3

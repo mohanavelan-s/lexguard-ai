@@ -18,7 +18,10 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY app.py seed_cases_db.py ./
+COPY modules ./modules
+COPY static ./static
+COPY templates ./templates
 COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
 CMD ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:${PORT:-5000}"]

@@ -23,6 +23,12 @@ python app.py
 
 Open [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
+If you want the heavier semantic-search stack locally, install the optional ML extras too:
+
+```bash
+python -m pip install -r requirements-ml.txt
+```
+
 For frontend development with hot reload, run the backend and Vite side by side:
 
 ```bash
@@ -61,6 +67,7 @@ This repo is adjusted for:
 - `Dockerfile` now builds the Vite frontend and bundles it with the Flask app for a single Railway service
 - `railway.json` configures Railway deployment behavior, health checks, and watched paths
 - `/health` is available for health checks
+- The default Railway image intentionally skips the optional SBERT/FAISS packages so deploys stay small and fast
 - Set `SESSION_COOKIE_SECURE=1` in hosted environments
 - If you attach a Railway volume, mount it somewhere like `/app/data` and set:
   - `LEXGUARD_DATA_DIR=/app/data`
@@ -124,7 +131,7 @@ cd android
 
 ## Notes
 
-- Semantic legal search uses the prebuilt FAISS index in `modules/data/`
+- Semantic legal search is optional in cloud deploys. The default web image falls back to keyword matching unless you install `requirements-ml.txt` in a custom environment.
 - The app uses local SQLite automatically when `DATABASE_URL` is not set and falls back to in-memory SQLite if local disk writes are unavailable
 - Uploaded files now live in the configured upload directory instead of an assumed repo-local folder
 - Flask serves the built SPA automatically when `frontend/dist/index.html` exists; otherwise it falls back to the legacy templates
