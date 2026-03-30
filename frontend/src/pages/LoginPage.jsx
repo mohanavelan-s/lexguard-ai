@@ -1,17 +1,23 @@
 import { useState } from "react";
-import { Navigate, Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 
-import AuthPanel from "../components/AuthPanel";
-import { apiRequest } from "../lib/api";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { Button } from "@/components/ui/Button";
+import { InputField } from "@/components/ui/InputField";
+import { loginUser } from "@/lib/api";
+import { useSession } from "@/context/SessionContext";
+import { useUiStore } from "@/store/ui-store";
 
-export default function LoginPage({ onSessionChange, session, sessionLoading }) {
+export default function LoginPage() {
   const navigate = useNavigate();
+  const { refreshSession, session, sessionLoading } = useSession();
+  const pushToast = useUiStore((state) => state.pushToast);
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!sessionLoading && session.authenticated) {
-    return <Navigate replace to={session.user?.role === "lawyer" ? "/lawyer-dashboard" : "/user-dashboard"} />;
+    return <Navigate replace to={session.user?.role === "lawyer" ? "/lawyer-dashboard" : "/dashboard"} />;
   }
 
   const handleSubmit = async (event) => {
@@ -20,12 +26,14 @@ export default function LoginPage({ onSessionChange, session, sessionLoading }) 
     setError("");
 
     try {
-      const payload = await apiRequest("/api/login", {
-        method: "POST",
-        body: form
+      const payload = await loginUser(form);
+      await refreshSession();
+      pushToast({
+        title: "Signed in",
+        description: "Your legal workspace is ready.",
+        tone: "success"
       });
-      await onSessionChange();
-      navigate(payload?.user?.role === "lawyer" ? "/lawyer-dashboard" : "/user-dashboard");
+      navigate(payload?.user?.role === "lawyer" ? "/lawyer-dashboard" : "/dashboard");
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -34,44 +42,40 @@ export default function LoginPage({ onSessionChange, session, sessionLoading }) 
   };
 
   return (
-    <AuthPanel
-      footer={
-        <p className="auth-footer">
-          Need an account?{" "}
-          <Link to="/register">
-            Create one
-          </Link>
-        </p>
-      }
-      subtitle="Sign in to save case lookups, manage profile settings, and access reviewer dashboards."
-      title="Welcome back"
-    >
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <label className="field-block">
-          <span>Email</span>
-          <input
-            className="input-field"
+    <AuthShell description="Log in to access saved legal history, reviewer workflows, billing, and your personalized AI workspace." title="Welcome back">
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Email</label>
+          <InputField
             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
             placeholder="you@example.com"
             type="email"
             value={form.email}
           />
-        </label>
-        <label className="field-block">
-          <span>Password</span>
-          <input
-            className="input-field"
+        </div>
+        <div className="space-y-2">
+          <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Password</label>
+          <InputField
             onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-            placeholder="Your password"
+            placeholder="Enter your password"
             type="password"
             value={form.password}
           />
-        </label>
-        <button className="primary-button full-width" disabled={loading} type="submit">
-          {loading ? "Signing in..." : "Login"}
-        </button>
-        {error ? <div className="status-banner status-error">{error}</div> : null}
+        </div>
+
+        {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
+
+        <Button className="w-full" size="lg" type="submit">
+          {loading ? "Signing in..." : "Sign in"}
+        </Button>
+
+        <p className="text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link className="font-medium text-brand" to="/register">
+            Create one
+          </Link>
+        </p>
       </form>
-    </AuthPanel>
+    </AuthShell>
   );
 }

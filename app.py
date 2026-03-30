@@ -236,6 +236,14 @@ def home():
 def dashboard():
     return render_ui_or_spa("dashboard.html")
 
+@app.route("/pricing")
+def pricing_page():
+    return render_ui_or_spa("dashboard.html")
+
+@app.route("/analytics")
+def analytics_page():
+    return render_ui_or_spa("dashboard.html")
+
 @app.route("/scanner")
 def scanner_page():
     return render_ui_or_spa("scanner.html")

@@ -1,37 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Download, Sparkles, UserRoundCheck } from "lucide-react";
 
-import SectionHero from "../components/SectionHero";
-import { apiRequest } from "../lib/api";
+import { ChatComposer } from "@/components/chat/ChatComposer";
+import { ChatMessage } from "@/components/chat/ChatMessage";
+import { ResponseInsightCards } from "@/components/chat/ResponseInsightCards";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { useSession } from "@/context/SessionContext";
+import { chatSuggestions, starterQueries } from "@/data/mock";
+import { apiRequest, sendLegalQuery, submitForReview } from "@/lib/api";
+import { storageGet, storageSet } from "@/lib/utils";
+import { useUiStore } from "@/store/ui-store";
 
-export default function LegalAdvisorPage({ session }) {
-  const [question, setQuestion] = useState("");
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+export default function LegalAdvisorPage() {
+  const { session } = useSession();
+  const pushToast = useUiStore((state) => state.pushToast);
+  const conversationRef = useRef(null);
+  const storageKey = session.user?.id ? `lexguard-chat-${session.user.id}` : "lexguard-chat-guest";
+  const [input, setInput] = useState("");
+  const [conversation, setConversation] = useState(() => storageGet(storageKey, []));
+  const [currentResponse, setCurrentResponse] = useState(null);
   const [listening, setListening] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    setConversation(storageGet(storageKey, []));
+  }, [storageKey]);
 
-    try {
-      const payload = await apiRequest("/api/legal", {
-        method: "POST",
-        body: { question }
-      });
-      setResult(payload);
-    } catch (requestError) {
-      setError(requestError.message);
-      setResult(null);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    storageSet(storageKey, conversation);
+  }, [conversation, storageKey]);
+
+  useEffect(() => {
+    const nextResponse = [...conversation].reverse().find((item) => item.role === "assistant");
+    setCurrentResponse(nextResponse?.response || null);
+  }, [conversation]);
+
+  useEffect(() => {
+    if (conversationRef.current) {
+      conversationRef.current.scrollTop = conversationRef.current.scrollHeight;
     }
-  };
+  }, [conversation, loading]);
 
   const handleVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
       setError("Speech recognition is not supported in this browser.");
       return;
@@ -49,7 +68,7 @@ export default function LegalAdvisorPage({ session }) {
 
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || "";
-      setQuestion(transcript);
+      setInput(transcript);
       setListening(false);
     };
 
@@ -65,15 +84,56 @@ export default function LegalAdvisorPage({ session }) {
     recognition.start();
   };
 
+  const handleSubmit = async () => {
+    const question = input.trim();
+    if (!question || loading) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setConversation((current) => [...current, { id: `user-${Date.now()}`, role: "user", answer: question }]);
+
+    try {
+      const payload = await sendLegalQuery(question);
+      const response = { ...payload, question };
+      setConversation((current) => [
+        ...current,
+        {
+          id: `assistant-${Date.now()}`,
+          role: "assistant",
+          title: response.title,
+          answer: response.answerText || response.interpretation,
+          response
+        }
+      ]);
+      setInput("");
+      pushToast({
+        title: "Analysis complete",
+        description: `Risk classified as ${response.risk}.`,
+        tone: response.risk === "high" ? "warning" : "success"
+      });
+    } catch (requestError) {
+      setError(requestError.message);
+      pushToast({
+        title: "Analysis failed",
+        description: requestError.message,
+        tone: "danger"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleExport = async () => {
-    if (!result?.matched) {
+    if (!currentResponse?.matched) {
       return;
     }
 
     try {
       const blob = await apiRequest("/export-pdf", {
         method: "POST",
-        body: result,
+        body: currentResponse,
         responseType: "blob"
       });
       const url = URL.createObjectURL(blob);
@@ -84,134 +144,162 @@ export default function LegalAdvisorPage({ session }) {
       anchor.click();
       document.body.removeChild(anchor);
       URL.revokeObjectURL(url);
+      pushToast({
+        title: "PDF exported",
+        description: "Your legal summary has been downloaded.",
+        tone: "success"
+      });
     } catch (requestError) {
       setError(requestError.message);
     }
   };
 
+  const handleReviewSubmit = async () => {
+    if (!currentResponse?.question || !session.authenticated || submittingReview) {
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const payload = await submitForReview(currentResponse.question);
+      pushToast({
+        title: "Sent for review",
+        description: payload.message || "A lawyer will review this answer.",
+        tone: "success"
+      });
+    } catch (requestError) {
+      pushToast({
+        title: "Review submission failed",
+        description: requestError.message,
+        tone: "danger"
+      });
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   return (
-    <div className="page-stack">
-      <SectionHero
-        eyebrow="Legal advisor"
-        title="Ask a legal question in plain language."
-        description="The advisor still runs on the Flask backend, but the experience now lives in the Vite frontend so it can scale as a real web product."
+    <PageTransition className="space-y-8">
+      <SectionHeading
         actions={
-          <>
-            <button className="primary-button" onClick={handleVoiceInput} type="button">
-              {listening ? "Listening..." : "Use voice input"}
-            </button>
-            {session.authenticated && session.user?.role === "user" ? (
-              <Link className="ghost-link" to="/user-dashboard">
-                Submit a query for lawyer review
-              </Link>
-            ) : null}
-          </>
+          currentResponse ? (
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={handleExport} variant="secondary">
+                <Download className="h-4 w-4" />
+                Export PDF
+              </Button>
+              {session.authenticated && session.user?.role === "user" ? (
+                <Button disabled={submittingReview} onClick={handleReviewSubmit} variant="secondary">
+                  <UserRoundCheck className="h-4 w-4" />
+                  {submittingReview ? "Submitting..." : "Request human review"}
+                </Button>
+              ) : null}
+            </div>
+          ) : null
         }
+        description="A premium AI workspace for intake, NLP-style interpretation, risk scoring, and clean response packaging."
+        eyebrow="AI legal assistant"
+        title="Ask a legal question in natural language"
       />
 
-      <section className="two-column-grid">
-        <form className="section-card" onSubmit={handleSubmit}>
-          <div className="section-heading">
-            <h2>Question</h2>
-            <span className="micro-note">Try rent, arrest, defamation, employment, or privacy scenarios.</span>
-          </div>
-          <label className="field-label" htmlFor="legal-question">
-            Describe your situation
-          </label>
-          <textarea
-            className="textarea-field large"
-            id="legal-question"
-            onChange={(event) => setQuestion(event.target.value)}
-            placeholder="Example: My landlord is asking me to vacate with no written notice. What are my rights?"
-            rows={9}
-            value={question}
-          />
-          <div className="button-row">
-            <button className="primary-button" disabled={loading || !question.trim()} type="submit">
-              {loading ? "Analyzing..." : "Get legal guidance"}
-            </button>
-            <button
-              className="ghost-button"
-              onClick={() => {
-                setQuestion("");
-                setResult(null);
-                setError("");
-              }}
-              type="button"
-            >
-              Reset
-            </button>
-          </div>
-          {error ? <div className="status-banner status-error">{error}</div> : null}
-        </form>
+      <div className="grid gap-6 xl:grid-cols-[1.15fr,0.85fr]">
+        <div className="space-y-6">
+          <ChatComposer input={input} listening={listening} onChange={setInput} onSubmit={handleSubmit} onVoice={handleVoiceInput} suggestions={chatSuggestions} />
+          {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
 
-        <section className="section-card">
-          <div className="section-heading">
-            <h2>Response</h2>
-            <span className="micro-note">Structured result from the semantic legal engine.</span>
-          </div>
-
-          {!result ? (
-            <div className="empty-card">
-              Ask a question and the right-side panel will populate with laws, next steps, and export controls.
-            </div>
-          ) : !result.matched ? (
-            <div className="stack-list">
-              <div className="status-banner status-info">{result.message}</div>
-              {result.available_topics ? <p className="muted-text">Available topics: {result.available_topics}</p> : null}
-              {result.disclaimer ? <p className="micro-note">{result.disclaimer}</p> : null}
-            </div>
-          ) : (
-            <div className="stack-list">
-              <div className="result-card">
-                <div className="section-heading compact">
-                  <h3>{result.title}</h3>
-                  <button className="secondary-button" onClick={handleExport} type="button">
-                    Export PDF
-                  </button>
-                </div>
-                <div className="html-content" dangerouslySetInnerHTML={{ __html: result.answer }} />
+          <div className="space-y-4 rounded-[32px] border border-border/60 bg-white/80 p-4 shadow-soft dark:bg-white/[0.03]">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Conversation</p>
+                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Live analysis feed</h3>
               </div>
+              <Sparkles className="h-5 w-5 text-brand" />
+            </div>
 
-              {result.law_reference?.length ? (
-                <div className="result-card">
-                  <h3>Relevant laws</h3>
-                  <div className="stack-list dense">
-                    {result.law_reference.map((law) => (
-                      <div className="law-item" key={`${law.name}-${law.section}`}>
-                        <strong>{law.name}</strong>
-                        <span>{law.section}</span>
-                        <p>{law.description}</p>
+            <div className="max-h-[540px] space-y-4 overflow-y-auto pr-1" ref={conversationRef}>
+              {!conversation.length && !loading ? (
+                <EmptyState
+                  actionLabel="Use a starter prompt"
+                  description="Choose one of the starter prompts below or paste your own legal issue to begin the analysis."
+                  onAction={() => setInput(starterQueries[0].body)}
+                  title="No legal conversation yet"
+                />
+              ) : (
+                conversation.map((item) => <ChatMessage answer={item.answer} key={item.id} role={item.role} title={item.title} />)
+              )}
+
+              {loading ? (
+                <Card className="rounded-[30px]">
+                  <div className="space-y-3">
+                    <Skeleton className="h-5 w-2/5" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/5" />
+                    <Skeleton className="h-4 w-3/5" />
+                  </div>
+                </Card>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {currentResponse ? (
+            <>
+              <ResponseInsightCards response={currentResponse} />
+              <Card className="rounded-[30px]">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Suggested actions</p>
+                    <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Recommended next steps</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {(currentResponse.actions.length ? currentResponse.actions : ["Document the issue, preserve evidence, and prepare for escalation."]).map((step) => (
+                      <div className="rounded-3xl border border-border/70 bg-white/70 px-4 py-4 text-sm leading-7 text-muted-foreground dark:bg-white/[0.03]" key={step}>
+                        {step}
                       </div>
                     ))}
                   </div>
                 </div>
-              ) : null}
-
-              {result.what_next?.length ? (
-                <div className="result-card">
-                  <h3>What to do next</h3>
-                  <ol className="ordered-list">
-                    {result.what_next.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ol>
+              </Card>
+              <Card className="rounded-[30px]">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Response detail</p>
+                    <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Legal explanation</h3>
+                  </div>
+                  <div className="rich-text" dangerouslySetInnerHTML={{ __html: currentResponse.answer || `<p>${currentResponse.answerText}</p>` }} />
                 </div>
+              </Card>
+              {currentResponse.laws?.length ? (
+                <Card className="rounded-[30px]">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Relevant law</p>
+                      <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Applicable references</h3>
+                    </div>
+                    <div className="space-y-3">
+                      {currentResponse.laws.map((law) => (
+                        <div className="rounded-3xl border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]" key={`${law.name}-${law.section}`}>
+                          <p className="font-medium text-foreground">{law.name}</p>
+                          <p className="mt-1 text-sm text-brand">{law.section}</p>
+                          <p className="mt-2 text-sm leading-7 text-muted-foreground">{law.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
               ) : null}
-
-              <div className="metrics-strip">
-                {result.keyword ? <span className="metric-chip">Match: {result.keyword}</span> : null}
-                {result.search_method ? <span className="metric-chip">Engine: {result.search_method}</span> : null}
-                {typeof result.confidence === "number" ? (
-                  <span className="metric-chip">Confidence: {Math.round(result.confidence * 100)}%</span>
-                ) : null}
-              </div>
-
-              {result.disclaimer ? <p className="micro-note">{result.disclaimer}</p> : null}
-            </div>
+            </>
+          ) : (
+            <EmptyState
+              actionLabel="Try a starter query"
+              description="Once you analyze a question, LexGuard will show the legal interpretation, risk level, laws, and recommended actions here."
+              onAction={() => setInput(starterQueries[1].body)}
+              title="Insight panel waiting"
+            />
           )}
-        </section>
-      </section>
-    </div>
+        </div>
+      </div>
+    </PageTransition>
   );
 }

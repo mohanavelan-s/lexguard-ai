@@ -1,841 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  --bg-ink: #08141f;
-  --bg-deep: #112433;
-  --panel: rgba(12, 28, 39, 0.78);
-  --panel-strong: rgba(10, 22, 31, 0.92);
-  --line: rgba(247, 232, 214, 0.12);
-  --text: #f6efe2;
-  --muted: #b9c6cf;
-  --gold: #d9a65a;
-  --gold-soft: #f0c98f;
-  --teal: #78d1c0;
-  --blue: #76a7ff;
-  --rose: #f28e82;
-  --amber: #f3c969;
-  --alert: #ff7e68;
-  --success: #7ed9a2;
-  --danger: #ff8e88;
-  --shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
-  font-family: "Poppins", sans-serif;
-  color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(217, 166, 90, 0.18), transparent 28%),
-    radial-gradient(circle at top right, rgba(120, 209, 192, 0.14), transparent 24%),
-    linear-gradient(140deg, #06111a 0%, #112433 46%, #0a1a28 100%);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  color: var(--text);
-  background: transparent;
-}
-
-a,
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  cursor: pointer;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-#root {
-  min-height: 100vh;
-}
-
-.app-shell {
-  min-height: 100vh;
-}
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  padding: 1rem 1.5rem;
-  backdrop-filter: blur(18px);
-  background: rgba(7, 17, 25, 0.72);
-  border-bottom: 1px solid var(--line);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.9rem;
-  min-width: 0;
-}
-
-.brand-mark {
-  display: grid;
-  place-items: center;
-  width: 2.7rem;
-  height: 2.7rem;
-  border-radius: 1rem;
-  background: linear-gradient(135deg, var(--gold), #7b5220);
-  color: #0b1520;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.brand strong,
-.hero-panel h1,
-.feature-card h2,
-.section-heading h2,
-.section-heading h3,
-.auth-card h1,
-.lawyer-card h2,
-.case-card h2,
-.review-card h3,
-.result-card h3,
-.metric-card strong {
-  font-family: "Cormorant Garamond", serif;
-}
-
-.brand strong {
-  display: block;
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.brand small {
-  display: block;
-  margin-top: 0.2rem;
-  color: var(--muted);
-}
-
-.topnav,
-.topbar-actions,
-.button-row,
-.hero-actions,
-.metrics-strip,
-.tag-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.topnav a,
-.topbar-actions a,
-.welcome-chip,
-.lang-pill,
-.pill,
-.metric-chip,
-.tag-chip,
-.badge {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.topnav a,
-.topbar-actions a,
-.ghost-button,
-.secondary-button,
-.primary-button,
-.danger-button,
-.primary-link,
-.ghost-link,
-.back-link {
-  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
-}
-
-.topnav a,
-.topbar-actions a {
-  padding: 0.65rem 1rem;
-  color: var(--muted);
-}
-
-.topnav a:hover,
-.topbar-actions a:hover {
-  color: var(--text);
-  border-color: rgba(217, 166, 90, 0.32);
-}
-
-.lang-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.4rem 0.8rem;
-  color: var(--muted);
-}
-
-.lang-pill select {
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  outline: none;
-}
-
-.welcome-chip {
-  padding: 0.55rem 0.95rem;
-  color: var(--gold-soft);
-}
-
-.page-shell {
-  width: min(1180px, calc(100vw - 2rem));
-  margin: 0 auto;
-  padding: 2rem 0 4rem;
-}
-
-.page-stack,
-.stack-list {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.stack-list.dense {
-  gap: 1rem;
-}
-
-.hero-panel,
-.section-card,
-.feature-card,
-.auth-card,
-.empty-card,
-.result-card,
-.clause-card,
-.case-card,
-.lawyer-card,
-.review-card {
-  position: relative;
-  border: 1px solid var(--line);
-  border-radius: 1.6rem;
-  background: linear-gradient(180deg, rgba(17, 34, 51, 0.82), rgba(8, 20, 31, 0.92));
-  box-shadow: var(--shadow);
-}
-
-.hero-panel::before,
-.section-card::before,
-.feature-card::before,
-.auth-card::before,
-.result-card::before,
-.clause-card::before,
-.case-card::before,
-.lawyer-card::before,
-.review-card::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 26%);
-  pointer-events: none;
-}
-
-.hero-panel {
-  overflow: hidden;
-  padding: 2rem;
-}
-
-.hero-panel h1 {
-  max-width: 15ch;
-  margin: 0.35rem 0 0.65rem;
-  font-size: clamp(2.5rem, 6vw, 4.7rem);
-  line-height: 0.96;
-  letter-spacing: -0.04em;
-}
-
-.hero-panel p {
-  max-width: 52rem;
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.75;
-}
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  color: var(--gold-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.74rem;
-  font-weight: 600;
-}
-
-.hero-actions {
-  margin-top: 1.4rem;
-}
-
-.primary-button,
-.secondary-button,
-.ghost-button,
-.danger-button,
-.primary-link,
-.ghost-link,
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  min-height: 2.9rem;
-  padding: 0.8rem 1.15rem;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  font-weight: 600;
-}
-
-.primary-button,
-.primary-link {
-  background: linear-gradient(135deg, var(--gold), #8c5d2d);
-  color: #0b1520;
-  box-shadow: 0 14px 30px rgba(217, 166, 90, 0.2);
-}
-
-.primary-button:hover,
-.primary-link:hover,
-.secondary-button:hover,
-.ghost-button:hover,
-.danger-button:hover,
-.ghost-link:hover,
-.back-link:hover {
-  transform: translateY(-1px);
-}
-
-.secondary-button {
-  border-color: rgba(120, 209, 192, 0.28);
-  background: rgba(120, 209, 192, 0.12);
-  color: var(--teal);
-}
-
-.ghost-button,
-.ghost-link,
-.back-link {
-  border-color: var(--line);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-}
-
-.danger-button {
-  border-color: rgba(255, 126, 104, 0.24);
-  background: rgba(255, 126, 104, 0.14);
-  color: #ffd4cd;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.micro-note,
-.muted-text {
-  color: var(--muted);
-  line-height: 1.65;
-}
-
-.feature-grid,
-.lawyer-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
-.feature-card,
-.lawyer-card,
-.case-card {
-  padding: 1.35rem;
-}
-
-.feature-card {
-  display: grid;
-  gap: 0.85rem;
-  min-height: 15rem;
-}
-
-.feature-card-top {
-  display: flex;
-  justify-content: space-between;
-}
-
-.feature-card h2,
-.lawyer-card h2,
-.case-card h2 {
-  margin: 0;
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.feature-card p,
-.lawyer-card p,
-.case-card p,
-.detail-block p,
-.law-item p,
-.transcript-item p,
-.review-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.feature-card.teal {
-  background: linear-gradient(180deg, rgba(11, 51, 54, 0.9), rgba(8, 20, 31, 0.95));
-}
-
-.feature-card.blue {
-  background: linear-gradient(180deg, rgba(20, 38, 72, 0.92), rgba(8, 20, 31, 0.95));
-}
-
-.feature-card.amber {
-  background: linear-gradient(180deg, rgba(65, 49, 15, 0.9), rgba(8, 20, 31, 0.95));
-}
-
-.feature-card.rose {
-  background: linear-gradient(180deg, rgba(70, 31, 36, 0.9), rgba(8, 20, 31, 0.95));
-}
-
-.feature-card.lime {
-  background: linear-gradient(180deg, rgba(42, 62, 26, 0.9), rgba(8, 20, 31, 0.95));
-}
-
-.feature-card.alert {
-  background: linear-gradient(180deg, rgba(70, 30, 21, 0.92), rgba(8, 20, 31, 0.95));
-}
-
-.pill,
-.metric-chip,
-.tag-chip,
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.76rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.pill.subtle,
-.metric-chip {
-  color: var(--gold-soft);
-}
-
-.section-card,
-.auth-card {
-  padding: 1.35rem;
-}
-
-.section-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.section-heading.compact {
-  margin-bottom: 0.7rem;
-}
-
-.section-heading h2,
-.section-heading h3,
-.auth-card h1 {
-  margin: 0;
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.two-column-grid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.search-grid,
-.detail-grid,
-.stats-grid {
-  display: grid;
-  gap: 1rem;
-}
-
-.search-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.detail-grid,
-.stats-grid {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-}
-
-.field-block,
-.field-label {
-  display: grid;
-  gap: 0.45rem;
-  color: var(--muted);
-}
-
-.field-block span,
-.field-label,
-.detail-label {
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.span-two {
-  grid-column: span 2;
-}
-
-.search-actions {
-  display: flex;
-  align-items: end;
-}
-
-.input-field,
-.textarea-field,
-.upload-zone {
-  width: 100%;
-  border: 1px solid rgba(247, 232, 214, 0.14);
-  border-radius: 1.1rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text);
-}
-
-.input-field,
-.textarea-field {
-  padding: 0.95rem 1rem;
-  outline: none;
-}
-
-.input-field:focus,
-.textarea-field:focus {
-  border-color: rgba(217, 166, 90, 0.42);
-  box-shadow: 0 0 0 3px rgba(217, 166, 90, 0.08);
-}
-
-.textarea-field {
-  resize: vertical;
-}
-
-.textarea-field.large {
-  min-height: 15rem;
-}
-
-.upload-zone {
-  display: grid;
-  gap: 0.5rem;
-  padding: 1.4rem;
-  cursor: pointer;
-}
-
-.upload-zone input {
-  display: none;
-}
-
-.empty-card {
-  padding: 1.3rem;
-  color: var(--muted);
-}
-
-.empty-card.wide {
-  grid-column: 1 / -1;
-}
-
-.status-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.95rem 1rem;
-  border-radius: 1rem;
-  border: 1px solid transparent;
-  line-height: 1.6;
-}
-
-.status-success {
-  background: rgba(126, 217, 162, 0.1);
-  border-color: rgba(126, 217, 162, 0.35);
-  color: #ceffe0;
-}
-
-.status-error {
-  background: rgba(255, 142, 136, 0.1);
-  border-color: rgba(255, 142, 136, 0.32);
-  color: #ffd8d4;
-}
-
-.status-info {
-  background: rgba(118, 167, 255, 0.1);
-  border-color: rgba(118, 167, 255, 0.32);
-  color: #d4e2ff;
-}
-
-.result-card,
-.clause-card,
-.review-card {
-  padding: 1.1rem;
-}
-
-.html-content {
-  display: grid;
-  gap: 0.6rem;
-  color: var(--muted);
-  line-height: 1.75;
-}
-
-.html-content ul {
-  margin: 0;
-  padding-left: 1.1rem;
-}
-
-.law-item,
-.detail-block {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.ordered-list {
-  margin: 0;
-  padding-left: 1.2rem;
-  color: var(--muted);
-  line-height: 1.8;
-}
-
-.metrics-grid {
-  display: grid;
-  gap: 0.8rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.metric-card {
-  padding: 1rem;
-  border-radius: 1.2rem;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.metric-card span {
-  display: block;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.metric-card strong {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: 2rem;
-}
-
-.strong-copy {
-  color: var(--gold-soft);
-  font-weight: 600;
-}
-
-.badge,
-.risk-high,
-.risk-medium,
-.risk-low {
-  color: var(--text);
-}
-
-.badge-pending,
-.risk-medium {
-  background: rgba(243, 201, 105, 0.12);
-  border-color: rgba(243, 201, 105, 0.32);
-  color: #ffe6b2;
-}
-
-.badge-approved {
-  background: rgba(126, 217, 162, 0.12);
-  border-color: rgba(126, 217, 162, 0.32);
-  color: #d6ffe5;
-}
-
-.badge-alert,
-.risk-high {
-  background: rgba(255, 126, 104, 0.12);
-  border-color: rgba(255, 126, 104, 0.32);
-  color: #ffd7d0;
-}
-
-.badge-neutral,
-.risk-low {
-  background: rgba(118, 167, 255, 0.1);
-  border-color: rgba(118, 167, 255, 0.28);
-  color: #d8e6ff;
-}
-
-.lawyer-top {
-  display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 1rem;
-  align-items: center;
-}
-
-.lawyer-avatar {
-  width: 84px;
-  height: 84px;
-  object-fit: cover;
-  border-radius: 1.1rem;
-}
-
-.match-meter {
-  display: grid;
-  gap: 0.6rem;
-}
-
-.progress-track {
-  overflow: hidden;
-  width: 100%;
-  height: 0.8rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.progress-track.large {
-  height: 1rem;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--teal), var(--gold));
-}
-
-.progress-fill.alert {
-  background: linear-gradient(90deg, var(--amber), var(--alert));
-}
-
-.stats-grid p {
-  color: var(--text);
-}
-
-.auth-shell {
-  display: grid;
-  place-items: center;
-  min-height: calc(100vh - 12rem);
-}
-
-.auth-card {
-  width: min(540px, 100%);
-}
-
-.auth-card p {
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.auth-form {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.auth-footer {
-  margin: 1rem 0 0;
-}
-
-.auth-footer a {
-  color: var(--gold-soft);
-}
-
-.case-card,
-.lawyer-card,
-.review-card,
-.transcript-item {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.transcript-feed {
-  display: grid;
-  gap: 0.8rem;
-}
-
-.transcript-item {
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 1.1rem;
-}
-
-.transcript-system {
-  background: rgba(118, 167, 255, 0.08);
-}
-
-.transcript-user {
-  background: rgba(217, 166, 90, 0.08);
-}
-
-.transcript-ai {
-  background: rgba(120, 209, 192, 0.08);
-}
-
-@media (max-width: 980px) {
-  .topbar {
-    flex-wrap: wrap;
+  color-scheme: light;
+  --background: 216 48% 97%;
+  --foreground: 226 30% 14%;
+  --surface: 0 0% 100%;
+  --surface-foreground: 226 30% 14%;
+  --muted: 215 38% 94%;
+  --muted-foreground: 220 14% 42%;
+  --border: 218 28% 86%;
+  --input: 218 28% 88%;
+  --ring: 213 89% 55%;
+  --accent: 220 38% 96%;
+  --accent-foreground: 226 30% 14%;
+  --brand: 214 88% 56%;
+  --brand-foreground: 0 0% 100%;
+  --brand-secondary: 187 78% 41%;
+  --success: 155 76% 39%;
+  --success-foreground: 160 100% 97%;
+  --warning: 38 92% 52%;
+  --warning-foreground: 25 95% 18%;
+  --danger: 0 78% 58%;
+  --danger-foreground: 0 100% 97%;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: 222 47% 8%;
+  --foreground: 210 40% 96%;
+  --surface: 222 42% 11%;
+  --surface-foreground: 210 40% 96%;
+  --muted: 222 33% 16%;
+  --muted-foreground: 215 18% 72%;
+  --border: 218 24% 21%;
+  --input: 218 24% 23%;
+  --ring: 212 98% 65%;
+  --accent: 218 28% 18%;
+  --accent-foreground: 210 40% 96%;
+  --brand: 212 100% 64%;
+  --brand-foreground: 222 47% 10%;
+  --brand-secondary: 185 71% 48%;
+  --success: 149 58% 47%;
+  --success-foreground: 160 100% 97%;
+  --warning: 41 93% 58%;
+  --warning-foreground: 24 100% 12%;
+  --danger: 0 86% 66%;
+  --danger-foreground: 0 100% 97%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
   }
 
-  .two-column-grid,
-  .search-grid {
-    grid-template-columns: 1fr;
+  html {
+    @apply scroll-smooth;
   }
 
-  .span-two {
-    grid-column: auto;
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at top left, hsl(var(--brand) / 0.18), transparent 28%),
+      radial-gradient(circle at top right, hsl(var(--brand-secondary) / 0.16), transparent 24%),
+      linear-gradient(180deg, hsl(var(--background)), hsl(var(--background)));
+    background-attachment: fixed;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+    mask-image: radial-gradient(circle at top, white, transparent 75%);
+    opacity: 0.55;
+    z-index: -1;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: auto -10% -18% auto;
+    width: 22rem;
+    height: 22rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, hsl(var(--brand-secondary) / 0.22), transparent 70%);
+    filter: blur(30px);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  img {
+    @apply block max-w-full;
+  }
+
+  ::selection {
+    @apply bg-brand/20 text-foreground;
+  }
+
+  #root {
+    @apply min-h-screen;
   }
 }
 
-@media (max-width: 760px) {
+@layer components {
+  .rich-text {
+    @apply space-y-4 text-sm leading-7 text-muted-foreground;
+  }
+
+  .rich-text p {
+    @apply m-0;
+  }
+
+  .rich-text ul,
+  .rich-text ol {
+    @apply my-0 ml-5 space-y-2;
+  }
+
+  .rich-text strong {
+    @apply text-foreground;
+  }
+
+  .surface-outline {
+    @apply rounded-[32px] border border-border/60 bg-white/80 shadow-soft backdrop-blur-2xl dark:bg-slate-950/40;
+  }
+
   .page-shell {
-    width: min(100vw - 1rem, 100%);
-    padding-top: 1rem;
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .pretty-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
   }
 
-  .topnav {
-    display: none;
+  .pretty-scrollbar::-webkit-scrollbar {
+    width: 10px;
   }
 
-  .hero-panel,
-  .section-card,
-  .feature-card,
-  .auth-card,
-  .case-card,
-  .lawyer-card {
-    border-radius: 1.25rem;
+  .pretty-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
   }
 
-  .hero-panel {
-    padding: 1.35rem;
-  }
-
-  .hero-panel h1 {
-    max-width: none;
-  }
-
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .lawyer-top {
-    grid-template-columns: 1fr;
-  }
-
-  .lawyer-avatar {
-    width: 100%;
-    max-width: 120px;
-    height: 120px;
+  .pretty-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 9999px;
   }
 }

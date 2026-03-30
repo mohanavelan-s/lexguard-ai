@@ -1,32 +1,73 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 
-import AppShell from "./components/AppShell";
-import { useChatling } from "./hooks/useChatling";
-import { apiRequest } from "./lib/api";
-import CasesPage from "./pages/CasesPage";
-import CaseLookupPage from "./pages/CaseLookupPage";
-import DashboardPage from "./pages/DashboardPage";
-import LawyerDashboardPage from "./pages/LawyerDashboardPage";
-import LawyersPage from "./pages/LawyersPage";
-import LegalAdvisorPage from "./pages/LegalAdvisorPage";
-import LoginPage from "./pages/LoginPage";
-import NotFoundPage from "./pages/NotFoundPage";
-import ProtectPage from "./pages/ProtectPage";
-import RegisterPage from "./pages/RegisterPage";
-import ScannerPage from "./pages/ScannerPage";
-import SettingsPage from "./pages/SettingsPage";
-import UserDashboardPage from "./pages/UserDashboardPage";
+import { MarketingLayout } from "@/components/layout/MarketingLayout";
+import { ProductLayout } from "@/components/layout/ProductLayout";
+import { ToastViewport } from "@/components/ui/ToastViewport";
+import { useSession } from "@/context/SessionContext";
+import DashboardPage from "@/pages/DashboardPage";
+import LandingExperiencePage from "@/pages/LandingExperiencePage";
+import PricingStudioPage from "@/pages/PricingStudioPage";
+import LoginPage from "@/pages/LoginPage";
+import RegisterPage from "@/pages/RegisterPage";
+import LegalAdvisorPage from "@/pages/LegalAdvisorPage";
+import ScannerPage from "@/pages/ScannerPage";
+import CasesPage from "@/pages/CasesPage";
+import LawyersPage from "@/pages/LawyersPage";
+import CaseLookupPage from "@/pages/CaseLookupPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import SettingsPage from "@/pages/SettingsPage";
+import UserWorkspacePage from "@/pages/UserWorkspacePage";
+import ReviewerQueuePage from "@/pages/ReviewerQueuePage";
+import NotFoundPage from "@/pages/NotFoundPage";
+import { useUiStore } from "@/store/ui-store";
+import ProtectWorkspacePage from "@/pages/ProtectWorkspacePage";
 
-const defaultSession = {
-  authenticated: false,
-  lang: "en",
-  user: null
-};
+function ThemeSync() {
+  const theme = useUiStore((state) => state.theme);
 
-function ProtectedRoute({ session, sessionLoading, requiredRole, children }) {
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    root.dataset.theme = theme;
+  }, [theme]);
+
+  return null;
+}
+
+function ScrollManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [location.pathname, location.hash]);
+
+  return null;
+}
+
+function RouteLoader() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center px-4">
+      <div className="rounded-[32px] border border-border/60 bg-white/85 px-6 py-5 text-sm text-muted-foreground shadow-soft backdrop-blur-xl dark:bg-slate-950/45">
+        Loading your LexGuard workspace...
+      </div>
+    </div>
+  );
+}
+
+function ProtectedRoute({ children, requiredRole }) {
+  const { session, sessionLoading } = useSession();
+
   if (sessionLoading) {
-    return <div className="empty-card">Loading your workspace...</div>;
+    return <RouteLoader />;
   }
 
   if (!session.authenticated) {
@@ -34,95 +75,82 @@ function ProtectedRoute({ session, sessionLoading, requiredRole, children }) {
   }
 
   if (requiredRole && session.user?.role !== requiredRole) {
-    return <Navigate replace to={session.user?.role === "lawyer" ? "/lawyer-dashboard" : "/user-dashboard"} />;
+    return <Navigate replace to={session.user?.role === "lawyer" ? "/lawyer-dashboard" : "/dashboard"} />;
   }
 
   return children;
 }
 
-function ScrollToTop() {
-  const location = useLocation();
+function ConnectionBanner() {
+  const { backendReachable, sessionError } = useSession();
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
-  }, [location.pathname]);
+  if (backendReachable || !sessionError) {
+    return null;
+  }
 
-  return null;
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-20 z-40 mx-auto flex max-w-3xl justify-center px-4">
+      <div className="pointer-events-auto rounded-full border border-warning/20 bg-warning/10 px-4 py-3 text-sm text-warning-foreground shadow-soft backdrop-blur-xl">
+        {sessionError}
+      </div>
+    </div>
+  );
 }
 
 export default function App() {
-  const [session, setSession] = useState(defaultSession);
-  const [sessionLoading, setSessionLoading] = useState(true);
-  const [sessionError, setSessionError] = useState("");
-
-  useChatling();
-
-  const refreshSession = async () => {
-    try {
-      const payload = await apiRequest("/api/session");
-      setSession({
-        authenticated: Boolean(payload?.authenticated),
-        lang: payload?.lang || "en",
-        user: payload?.user || null
-      });
-      setSessionError("");
-    } catch (error) {
-      setSession(defaultSession);
-      setSessionError("The API is not responding yet. Start Flask on port 5000 for local development.");
-    } finally {
-      setSessionLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshSession();
-  }, []);
-
   return (
-    <AppShell onSessionChange={refreshSession} session={session}>
-      <ScrollToTop />
-      {sessionError ? <div className="status-banner status-error">{sessionError}</div> : null}
+    <>
+      <ThemeSync />
+      <ScrollManager />
+      <ToastViewport />
+      <ConnectionBanner />
 
       <Routes>
-        <Route path="/" element={<DashboardPage session={session} />} />
-        <Route path="/dashboard" element={<DashboardPage session={session} />} />
-        <Route path="/scanner" element={<ScannerPage />} />
-        <Route path="/legal-advisor" element={<LegalAdvisorPage session={session} />} />
-        <Route path="/cases" element={<CasesPage />} />
-        <Route path="/lawyers" element={<LawyersPage />} />
-        <Route path="/case-lookup" element={<CaseLookupPage session={session} />} />
-        <Route path="/protect" element={<ProtectPage />} />
-        <Route
-          path="/login"
-          element={<LoginPage onSessionChange={refreshSession} session={session} sessionLoading={sessionLoading} />}
-        />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute session={session} sessionLoading={sessionLoading}>
-              <SettingsPage onSessionChange={refreshSession} session={session} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/user-dashboard"
-          element={
-            <ProtectedRoute requiredRole="user" session={session} sessionLoading={sessionLoading}>
-              <UserDashboardPage session={session} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/lawyer-dashboard"
-          element={
-            <ProtectedRoute requiredRole="lawyer" session={session} sessionLoading={sessionLoading}>
-              <LawyerDashboardPage session={session} />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route element={<MarketingLayout />}>
+          <Route element={<LandingExperiencePage />} path="/" />
+          <Route element={<PricingStudioPage />} path="/pricing" />
+        </Route>
+
+        <Route element={<LoginPage />} path="/login" />
+        <Route element={<RegisterPage />} path="/register" />
+
+        <Route element={<ProductLayout />}>
+          <Route element={<DashboardPage />} path="/dashboard" />
+          <Route element={<LegalAdvisorPage />} path="/legal-advisor" />
+          <Route element={<ScannerPage />} path="/scanner" />
+          <Route element={<CasesPage />} path="/cases" />
+          <Route element={<LawyersPage />} path="/lawyers" />
+          <Route element={<CaseLookupPage />} path="/case-lookup" />
+          <Route element={<ProtectWorkspacePage />} path="/protect" />
+          <Route element={<AnalyticsPage />} path="/analytics" />
+          <Route
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            }
+            path="/settings"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole="user">
+                <UserWorkspacePage />
+              </ProtectedRoute>
+            }
+            path="/user-dashboard"
+          />
+          <Route
+            element={
+              <ProtectedRoute requiredRole="lawyer">
+                <ReviewerQueuePage />
+              </ProtectedRoute>
+            }
+            path="/lawyer-dashboard"
+          />
+        </Route>
+
+        <Route element={<NotFoundPage />} path="*" />
       </Routes>
-    </AppShell>
+    </>
   );
 }

@@ -1,7 +1,29 @@
 import { useState } from "react";
 
-import SectionHero from "../components/SectionHero";
-import { apiRequest } from "../lib/api";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { uploadContractFile } from "@/lib/api";
+import { getRiskMeta } from "@/lib/utils";
+
+const sampleScan = {
+  success: true,
+  heatmap: { high: 2, medium: 2, low: 4 },
+  clauses: [
+    {
+      id: 1,
+      risk: "HIGH",
+      risk_title: "Termination without notice",
+      impact: "May seriously affect your job security or rights.",
+      suggestion: "Negotiate safer terms or add employee protections.",
+      full_text: "The employer may terminate the engagement immediately without prior written notice."
+    }
+  ]
+};
 
 export default function ScannerPage() {
   const [file, setFile] = useState(null);
@@ -9,10 +31,9 @@ export default function ScannerPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (event) => {
+  const handleUpload = async (event) => {
     event.preventDefault();
-    if (!file) {
-      setError("Choose a PDF before scanning.");
+    if (!file || loading) {
       return;
     }
 
@@ -20,12 +41,7 @@ export default function ScannerPage() {
     setError("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const payload = await apiRequest("/api/scan", {
-        method: "POST",
-        body: formData
-      });
+      const payload = await uploadContractFile(file);
       setResult(payload);
     } catch (requestError) {
       setError(requestError.message);
@@ -36,92 +52,95 @@ export default function ScannerPage() {
   };
 
   return (
-    <div className="page-stack">
-      <SectionHero
+    <PageTransition className="space-y-8">
+      <SectionHeading
+        description="Turn dense legal documents into a visual risk dashboard with premium presentation, clause summaries, and action guidance."
         eyebrow="Document scanner"
-        title="Upload a document and surface risky clauses quickly."
-        description="This screen now runs as a frontend workflow while the existing Flask analyzer handles PDF extraction and clause scoring behind the scenes."
+        title="Clause-level contract risk analysis"
       />
 
-      <section className="two-column-grid">
-        <form className="section-card" onSubmit={handleSubmit}>
-          <div className="section-heading">
-            <h2>Upload contract</h2>
-            <span className="micro-note">PDF files work best with the current parser.</span>
-          </div>
-
-          <label className="upload-zone" htmlFor="scan-file">
-            <input
-              accept=".pdf"
-              id="scan-file"
-              onChange={(event) => setFile(event.target.files?.[0] || null)}
-              type="file"
-            />
-            <strong>{file ? file.name : "Drop a PDF here or click to browse"}</strong>
-            <span>LexGuard will inspect the first clauses and score risk intensity.</span>
-          </label>
-
-          <div className="button-row">
-            <button className="primary-button" disabled={loading || !file} type="submit">
-              {loading ? "Scanning document..." : "Analyze document"}
-            </button>
-          </div>
-          {error ? <div className="status-banner status-error">{error}</div> : null}
-        </form>
-
-        <section className="section-card">
-          <div className="section-heading">
-            <h2>Risk output</h2>
-            <span className="micro-note">Heatmap plus clause-by-clause findings.</span>
-          </div>
-
-          {!result ? (
-            <div className="empty-card">
-              Upload a file to see clause heatmaps, legal impact notes, and safer negotiation suggestions.
+      <div className="grid gap-6 xl:grid-cols-[0.95fr,1.05fr]">
+        <Card className="rounded-[32px]">
+          <form className="space-y-5" onSubmit={handleUpload}>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Upload file</p>
+              <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Analyze a PDF agreement</h3>
             </div>
+
+            <label className="flex min-h-[220px] cursor-pointer flex-col items-center justify-center rounded-[30px] border border-dashed border-border/70 bg-white/60 px-6 text-center dark:bg-white/[0.03]">
+              <input className="hidden" onChange={(event) => setFile(event.target.files?.[0] || null)} type="file" />
+              <p className="font-medium text-foreground">{file?.name || "Drop a PDF here or click to browse"}</p>
+              <p className="mt-2 text-sm leading-7 text-muted-foreground">Best for numbered agreements, employment contracts, and rental documents.</p>
+            </label>
+
+            {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
+
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={!file || loading} type="submit">
+                {loading ? "Scanning..." : "Analyze document"}
+              </Button>
+              <Button onClick={() => setResult(sampleScan)} type="button" variant="secondary">
+                Load sample result
+              </Button>
+            </div>
+          </form>
+        </Card>
+
+        <div className="space-y-6">
+          {loading ? (
+            <Card className="rounded-[32px] space-y-4">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </Card>
+          ) : result?.success ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <MetricCard label="High risk" value={result.heatmap?.high ?? 0} />
+                <MetricCard label="Medium risk" value={result.heatmap?.medium ?? 0} />
+                <MetricCard label="Low risk" value={result.heatmap?.low ?? 0} />
+              </div>
+
+              <div className="grid gap-4">
+                {(result.clauses || []).map((clause) => {
+                  const riskMeta = getRiskMeta(clause.risk?.toLowerCase());
+
+                  return (
+                    <Card className="rounded-[30px]" key={clause.id}>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <h3 className="font-display text-3xl font-semibold text-foreground">{clause.risk_title}</h3>
+                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ${riskMeta.className}`}>
+                            {clause.risk}
+                          </span>
+                        </div>
+                        <p className="text-sm leading-7 text-muted-foreground">{clause.full_text}</p>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="rounded-3xl border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Impact</p>
+                            <p className="mt-2 text-sm leading-7 text-muted-foreground">{clause.impact}</p>
+                          </div>
+                          <div className="rounded-3xl border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Suggested change</p>
+                            <p className="mt-2 text-sm leading-7 text-muted-foreground">{clause.suggestion}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
           ) : (
-            <div className="stack-list">
-              <div className="metrics-grid">
-                <div className="metric-card">
-                  <span>High risk</span>
-                  <strong>{result.heatmap?.high || 0}</strong>
-                </div>
-                <div className="metric-card">
-                  <span>Medium risk</span>
-                  <strong>{result.heatmap?.medium || 0}</strong>
-                </div>
-                <div className="metric-card">
-                  <span>Low risk</span>
-                  <strong>{result.heatmap?.low || 0}</strong>
-                </div>
-              </div>
-
-              <div className="stack-list dense">
-                {result.clauses?.map((clause) => (
-                  <article className="clause-card" key={clause.id}>
-                    <div className="section-heading compact">
-                      <h3>Clause {clause.id}</h3>
-                      <span className={`badge risk-${clause.risk?.toLowerCase()}`}>{clause.risk}</span>
-                    </div>
-                    <p className="strong-copy">{clause.risk_title}</p>
-                    <p>{clause.full_text}</p>
-                    <div className="detail-grid">
-                      <div>
-                        <span className="detail-label">Impact</span>
-                        <p>{clause.impact}</p>
-                      </div>
-                      <div>
-                        <span className="detail-label">Suggested action</span>
-                        <p>{clause.suggestion}</p>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
+            <EmptyState
+              actionLabel="Load sample result"
+              description="Upload a legal document and LexGuard will visualize risky clauses, impact, and mitigation recommendations."
+              onAction={() => setResult(sampleScan)}
+              title="No scan results yet"
+            />
           )}
-        </section>
-      </section>
-    </div>
+        </div>
+      </div>
+    </PageTransition>
   );
 }
