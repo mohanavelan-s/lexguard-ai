@@ -641,18 +641,30 @@ def submit_case():
 
     # Send email notification to logged-in user
     email_sent = False
+    notification_email = None
+    notification_message = "Case status saved successfully."
     try:
         user = get_user_by_id(session["user_id"])
         if user:
+            notification_email = user["email"]
             email_sent = send_case_email(user["email"], case_number, status, next_hearing)
+            if email_sent:
+                notification_message = f"Email notification sent to {user['email']}."
+            elif RESEND_API_KEY:
+                notification_message = "Case status saved, but email delivery failed. Please try again later."
+            else:
+                notification_message = "Case status saved. Email delivery is unavailable until RESEND_API_KEY is configured."
     except Exception as exc:
         print(f"[CASE-LOOKUP ERROR] Email lookup failed: {exc}")
+        notification_message = "Case status saved, but email delivery failed due to a notification error."
 
     return jsonify({
         "success": True,
         "status": status,
         "next_hearing": next_hearing or "Not Scheduled",
-        "email_sent": email_sent
+        "email_sent": email_sent,
+        "notification_email": notification_email,
+        "notification_message": notification_message
     })
 
 

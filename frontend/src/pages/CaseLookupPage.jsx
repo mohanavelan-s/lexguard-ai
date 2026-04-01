@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InputField } from "@/components/ui/InputField";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { useSession } from "@/context/SessionContext";
 import { lookupCase } from "@/lib/api";
 import { useUiStore } from "@/store/ui-store";
@@ -85,8 +85,8 @@ export default function CaseLookupPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-10">
+      <WorkflowHero
         actions={
           !session.authenticated ? (
             <Link to="/login">
@@ -94,16 +94,24 @@ export default function CaseLookupPage() {
                 Login to save results
               </Button>
             </Link>
-          ) : (
-            <Badge variant="brand">Signed in as {session.user?.role}</Badge>
-          )
+          ) : null
         }
+        badges={[session.authenticated ? `Signed in as ${session.user?.role}` : "Login required", "Email status updates"]}
         description="A cleaner case-tracking experience for status checks, hearing dates, and notification states, wrapped in a premium SaaS-style surface."
         eyebrow="Case status lookup"
+        highlights={[
+          "Track a case on its own page with room for hearing dates, notification delivery, and quick reference examples.",
+          "When email delivery is configured, updates are sent back to the signed-in user's address automatically."
+        ]}
+        icon={SearchCheck}
+        stats={[
+          { label: "Latest status", value: result?.status || "Awaiting lookup" },
+          { label: "Email delivery", value: result?.email_sent ? "Sent" : session.authenticated ? "Ready" : "Disabled" }
+        ]}
         title="Track hearing progress without leaving the workspace"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr,1.05fr]">
+      <div className="grid gap-8 2xl:grid-cols-[minmax(0,0.92fr),minmax(0,1.08fr)]">
         <Card className="rounded-[32px]">
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
@@ -174,7 +182,7 @@ export default function CaseLookupPage() {
         </Card>
 
         <div className="grid gap-6">
-          <Card className="rounded-[32px]">
+          <Card className="rounded-[34px]">
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -194,7 +202,7 @@ export default function CaseLookupPage() {
               ) : (
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                    <div className="rounded-[30px] border border-border/70 bg-white/70 p-5 dark:bg-white/[0.03]">
                       <div className="flex items-center gap-3">
                         <SearchCheck className="h-5 w-5 text-brand" />
                         <div>
@@ -203,7 +211,7 @@ export default function CaseLookupPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                    <div className="rounded-[30px] border border-border/70 bg-white/70 p-5 dark:bg-white/[0.03]">
                       <div className="flex items-center gap-3">
                         <CalendarClock className="h-5 w-5 text-brand" />
                         <div>
@@ -214,16 +222,22 @@ export default function CaseLookupPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-[28px] border border-border/70 bg-white/70 p-5 dark:bg-white/[0.03]">
+                  <div className="rounded-[30px] border border-border/70 bg-white/70 p-6 dark:bg-white/[0.03]">
                     <div className="flex items-start gap-3">
                       <MailCheck className="mt-1 h-5 w-5 text-brand" />
                       <div>
                         <p className="font-medium text-foreground">Notification status</p>
                         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                          {result.email_sent
-                            ? "An email notification was sent to the signed-in user."
-                            : "The lookup was stored without email delivery."}
+                          {result.notification_message ||
+                            (result.email_sent
+                              ? `An email notification was sent to ${session.user?.email || "the signed-in user"}.`
+                              : "The lookup was saved, but email delivery is not configured for this deployment yet.")}
                         </p>
+                        {result.notification_email || session.user?.email ? (
+                          <p className="mt-2 text-xs uppercase tracking-[0.18em] text-brand/80">
+                            Delivery target: {result.notification_email || session.user?.email}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -232,7 +246,7 @@ export default function CaseLookupPage() {
             </div>
           </Card>
 
-          <Card className="rounded-[32px]">
+          <Card className="rounded-[34px]">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand">

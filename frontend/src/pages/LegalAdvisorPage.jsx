@@ -8,7 +8,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useSession } from "@/context/SessionContext";
 import { chatSuggestions, starterQueries } from "@/data/mock";
@@ -179,8 +179,8 @@ export default function LegalAdvisorPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-12">
+      <WorkflowHero
         actions={
           currentResponse ? (
             <div className="flex flex-wrap gap-3">
@@ -197,17 +197,27 @@ export default function LegalAdvisorPage() {
             </div>
           ) : null
         }
-        description="A premium AI workspace for intake, NLP-style interpretation, risk scoring, and clean response packaging."
+        badges={["Natural language intake", `Output ${session.lang?.toUpperCase() || "EN"}`]}
+        description={`A premium AI workspace for intake, interpretation, risk scoring, and clean response packaging. Output follows the selected workspace language (${session.lang?.toUpperCase() || "EN"}).`}
         eyebrow="AI legal assistant"
+        highlights={[
+          "Ask a question in plain language, then review interpretation, risk, and next steps on their own surfaces.",
+          "Export polished summaries and escalate sensitive issues into the human review flow when needed."
+        ]}
         title="Ask a legal question in natural language"
+        icon={Sparkles}
+        stats={[
+          { label: "Session mode", value: session.authenticated ? "Saved history" : "Guest preview" },
+          { label: "Human review", value: session.user?.role === "user" ? "Available" : "Role-gated" }
+        ]}
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1.15fr,0.85fr]">
-        <div className="space-y-6">
+      <div className="grid gap-8 2xl:grid-cols-[minmax(0,1fr),430px]">
+        <div className="space-y-7">
           <ChatComposer input={input} listening={listening} onChange={setInput} onSubmit={handleSubmit} onVoice={handleVoiceInput} suggestions={chatSuggestions} />
           {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
 
-          <div className="space-y-4 rounded-[32px] border border-border/60 bg-white/80 p-4 shadow-soft dark:bg-white/[0.03]">
+          <div className="space-y-5 rounded-[34px] border border-border/60 bg-white/80 p-6 shadow-soft dark:bg-white/[0.03] md:p-7">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Conversation</p>
@@ -216,7 +226,7 @@ export default function LegalAdvisorPage() {
               <Sparkles className="h-5 w-5 text-brand" />
             </div>
 
-            <div className="max-h-[540px] space-y-4 overflow-y-auto pr-1" ref={conversationRef}>
+            <div className="pretty-scrollbar max-h-[640px] space-y-4 overflow-y-auto pr-1" ref={conversationRef}>
               {!conversation.length && !loading ? (
                 <EmptyState
                   actionLabel="Use a starter prompt"

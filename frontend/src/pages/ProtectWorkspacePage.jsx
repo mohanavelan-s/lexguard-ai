@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InputField } from "@/components/ui/InputField";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { activateProtectMode, sendSosSignal } from "@/lib/api";
 import { useUiStore } from "@/store/ui-store";
 
@@ -279,8 +279,8 @@ export default function ProtectWorkspacePage() {
   }, []);
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-10">
+      <WorkflowHero
         actions={
           <div className="flex flex-wrap gap-3">
             <Button onClick={startProtection} type="button">
@@ -291,12 +291,22 @@ export default function ProtectWorkspacePage() {
             </Button>
           </div>
         }
+        badges={["Emergency workflow", "Live safety tools"]}
         description="A premium emergency workspace for location capture, SOS messaging, voice watch, and quick-response legal guidance."
         eyebrow="Protect mode"
+        highlights={[
+          "Protect mode now lives on a separate page so emergency tools stay clear, immediate, and uncluttered.",
+          "Voice watch, GPS capture, and SOS delivery remain visible in one law-focused emergency surface."
+        ]}
+        icon={Siren}
+        stats={[
+          { label: "Protection", value: active ? "Armed" : "Standby" },
+          { label: "Voice watch", value: voiceEnabled ? "Live" : "Off" }
+        ]}
         title="Keep emergency tools one tap away"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.94fr,1.06fr]">
+      <div className="grid gap-7 2xl:grid-cols-[0.94fr,1.06fr]">
         <div className="space-y-6">
           <Card className="rounded-[32px]">
             <div className="space-y-5">

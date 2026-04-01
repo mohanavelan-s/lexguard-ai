@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InputField } from "@/components/ui/InputField";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { useSession } from "@/context/SessionContext";
 import { fetchSettings, updateSettings } from "@/lib/api";
 import { useUiStore } from "@/store/ui-store";
@@ -74,10 +75,20 @@ export default function SettingsPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-10">
+      <WorkflowHero
+        badges={["Account control", "Language preferences"]}
         description="Manage identity, UI preferences, billing posture, and the core settings that make the workspace feel like a deployable SaaS product."
         eyebrow="Settings"
+        highlights={[
+          "Profile, theme, language, and case-notification context are grouped here so the rest of the product stays task-focused.",
+          "Translation is designed to work with minimal setup by applying your selected language across the workspace shell and AI output."
+        ]}
+        stats={[
+          { label: "Theme", value: theme === "dark" ? "Dark" : "Light" },
+          { label: "Language", value: session.lang?.toUpperCase() || "EN" },
+          { label: "Role", value: session.user?.role || "Guest" }
+        ]}
         title="Profile, preferences, and billing"
       />
 
@@ -159,6 +170,35 @@ export default function SettingsPage() {
                   </span>
                   {theme === "light" ? <Badge variant="brand">Active</Badge> : null}
                 </button>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="rounded-[32px]">
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Language + notifications</p>
+                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Workspace translation</h3>
+              </div>
+              <div className="rounded-3xl border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="font-medium text-foreground">Preferred language</p>
+                    <p className="mt-1 text-sm leading-7 text-muted-foreground">
+                      Headings, shared UI copy, and AI answers will follow the selected language wherever supported.
+                    </p>
+                  </div>
+                  <LanguageSwitcher />
+                </div>
+              </div>
+              <div className="rounded-3xl border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
+                <p className="font-medium text-foreground">Case update email target</p>
+                <p className="mt-1 text-sm leading-7 text-muted-foreground">
+                  Case lookup notifications are routed to the email on this account when email delivery is configured.
+                </p>
+                <Badge className="mt-3" variant="brand">
+                  {session.user?.email || "No email on account"}
+                </Badge>
               </div>
             </div>
           </Card>

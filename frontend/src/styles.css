@@ -4,20 +4,20 @@
 
 :root {
   color-scheme: light;
-  --background: 216 48% 97%;
-  --foreground: 226 30% 14%;
-  --surface: 0 0% 100%;
-  --surface-foreground: 226 30% 14%;
-  --muted: 215 38% 94%;
-  --muted-foreground: 220 14% 42%;
-  --border: 218 28% 86%;
-  --input: 218 28% 88%;
-  --ring: 213 89% 55%;
-  --accent: 220 38% 96%;
-  --accent-foreground: 226 30% 14%;
-  --brand: 214 88% 56%;
-  --brand-foreground: 0 0% 100%;
-  --brand-secondary: 187 78% 41%;
+  --background: 38 32% 97%;
+  --foreground: 224 25% 14%;
+  --surface: 36 22% 99%;
+  --surface-foreground: 224 25% 14%;
+  --muted: 36 24% 92%;
+  --muted-foreground: 220 11% 39%;
+  --border: 34 20% 82%;
+  --input: 34 18% 84%;
+  --ring: 38 72% 52%;
+  --accent: 36 28% 94%;
+  --accent-foreground: 224 25% 14%;
+  --brand: 38 72% 52%;
+  --brand-foreground: 28 52% 12%;
+  --brand-secondary: 26 46% 36%;
   --success: 155 76% 39%;
   --success-foreground: 160 100% 97%;
   --warning: 38 92% 52%;
@@ -28,20 +28,20 @@
 
 .dark {
   color-scheme: dark;
-  --background: 222 47% 8%;
-  --foreground: 210 40% 96%;
-  --surface: 222 42% 11%;
-  --surface-foreground: 210 40% 96%;
-  --muted: 222 33% 16%;
-  --muted-foreground: 215 18% 72%;
-  --border: 218 24% 21%;
-  --input: 218 24% 23%;
-  --ring: 212 98% 65%;
-  --accent: 218 28% 18%;
-  --accent-foreground: 210 40% 96%;
-  --brand: 212 100% 64%;
-  --brand-foreground: 222 47% 10%;
-  --brand-secondary: 185 71% 48%;
+  --background: 226 33% 9%;
+  --foreground: 36 30% 95%;
+  --surface: 224 28% 11%;
+  --surface-foreground: 36 30% 95%;
+  --muted: 223 23% 16%;
+  --muted-foreground: 35 16% 71%;
+  --border: 225 20% 20%;
+  --input: 225 18% 22%;
+  --ring: 39 78% 60%;
+  --accent: 224 24% 17%;
+  --accent-foreground: 36 30% 95%;
+  --brand: 39 78% 60%;
+  --brand-foreground: 31 57% 12%;
+  --brand-secondary: 28 58% 46%;
   --success: 149 58% 47%;
   --success-foreground: 160 100% 97%;
   --warning: 41 93% 58%;
@@ -62,8 +62,8 @@
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
     background-image:
-      radial-gradient(circle at top left, hsl(var(--brand) / 0.18), transparent 28%),
-      radial-gradient(circle at top right, hsl(var(--brand-secondary) / 0.16), transparent 24%),
+      radial-gradient(circle at top left, hsl(var(--brand) / 0.16), transparent 28%),
+      radial-gradient(circle at top right, hsl(var(--brand-secondary) / 0.14), transparent 24%),
       linear-gradient(180deg, hsl(var(--background)), hsl(var(--background)));
     background-attachment: fixed;
   }

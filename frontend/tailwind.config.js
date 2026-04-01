@@ -45,7 +45,7 @@ export default {
         display: ["Poppins", "sans-serif"]
       },
       boxShadow: {
-        glow: "0 24px 80px rgba(20, 27, 45, 0.18)",
+        glow: "0 24px 80px rgba(92, 66, 28, 0.18)",
         soft: "0 24px 60px rgba(15, 23, 42, 0.12)",
         card: "0 18px 40px rgba(2, 6, 23, 0.1)"
       },
@@ -53,7 +53,7 @@ export default {
         "hero-grid":
           "linear-gradient(rgba(148, 163, 184, 0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.10) 1px, transparent 1px)",
         "hero-gradient":
-          "radial-gradient(circle at top, rgba(79, 70, 229, 0.24), transparent 28%), radial-gradient(circle at 20% 20%, rgba(14, 165, 233, 0.20), transparent 32%), radial-gradient(circle at 80% 0%, rgba(16, 185, 129, 0.12), transparent 24%)"
+          "radial-gradient(circle at top, rgba(204, 155, 74, 0.28), transparent 28%), radial-gradient(circle at 20% 20%, rgba(144, 102, 53, 0.18), transparent 32%), radial-gradient(circle at 80% 0%, rgba(218, 192, 146, 0.14), transparent 24%)"
       },
       animation: {
         float: "float 8s ease-in-out infinite",

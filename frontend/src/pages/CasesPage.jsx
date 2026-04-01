@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { FileSearch } from "lucide-react";
 
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InputField } from "@/components/ui/InputField";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { searchCases } from "@/lib/api";
 
 const initialFilters = {
@@ -45,10 +46,20 @@ export default function CasesPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-10">
+      <WorkflowHero
+        badges={["Dedicated research", "Precedent search"]}
         description="Search precedent with a cleaner legal research interface that feels closer to a knowledge product than a simple data dump."
         eyebrow="Case intelligence"
+        highlights={[
+          "Research lives on its own page now, with room for filters, summaries, and outcome review without crowding the dashboard.",
+          "Use it as a precedent desk for landmark cases, high courts, and reusable legal context."
+        ]}
+        icon={FileSearch}
+        stats={[
+          { label: "Courts", value: "Supreme + High" },
+          { label: "Results", value: loading ? "Refreshing" : `${cases.length}` }
+        ]}
         title="Search landmark cases and judgments"
       />
 

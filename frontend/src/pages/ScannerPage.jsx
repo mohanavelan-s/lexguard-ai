@@ -1,12 +1,13 @@
 import { useState } from "react";
+import { FileText } from "lucide-react";
 
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { uploadContractFile } from "@/lib/api";
 import { getRiskMeta } from "@/lib/utils";
 
@@ -52,14 +53,24 @@ export default function ScannerPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
+    <PageTransition className="space-y-10">
+      <WorkflowHero
+        badges={["Dedicated workflow", "Clause heatmaps"]}
         description="Turn dense legal documents into a visual risk dashboard with premium presentation, clause summaries, and action guidance."
         eyebrow="Document scanner"
+        highlights={[
+          "Upload a contract on its own page, review clause-level issues, and keep the dashboard free from analysis clutter.",
+          "Designed for walkthrough demos, negotiation prep, and fast legal risk reviews."
+        ]}
+        icon={FileText}
+        stats={[
+          { label: "Accepted format", value: "PDF" },
+          { label: "Output", value: result?.success ? "Risk mapped" : "Awaiting upload" }
+        ]}
         title="Clause-level contract risk analysis"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr,1.05fr]">
+      <div className="grid gap-7 2xl:grid-cols-[0.94fr,1.06fr]">
         <Card className="rounded-[32px]">
           <form className="space-y-5" onSubmit={handleUpload}>
             <div>

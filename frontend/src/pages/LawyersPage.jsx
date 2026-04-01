@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InputField, TextAreaField } from "@/components/ui/InputField";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { lawyers as curatedLawyers } from "@/data/lawyers";
 import { searchLawyers } from "@/lib/api";
 import { initials } from "@/lib/utils";
@@ -122,15 +122,24 @@ export default function LawyersPage() {
   };
 
   return (
-    <PageTransition className="space-y-8">
-      <SectionHeading
-        actions={<Badge variant="brand">{sourceLabel}</Badge>}
+    <PageTransition className="space-y-10">
+      <WorkflowHero
+        badges={[sourceLabel, "Consultation routing"]}
         description="Match a legal brief to the right counsel using a product-grade discovery flow with instant scoring, location filters, and consultation-ready cards."
         eyebrow="Lawyer connect"
+        highlights={[
+          "Give lawyer discovery its own breathing room with a dedicated brief-to-counsel workflow.",
+          "City, specialization, and fit scoring now support a cleaner premium directory experience."
+        ]}
+        icon={BriefcaseBusiness}
+        stats={[
+          { label: "Directory", value: `${directory.length} profiles` },
+          { label: "Specializations", value: `${specializationOptions.length}` }
+        ]}
         title="Find the right legal expert faster"
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.96fr,1.04fr]">
+      <div className="grid gap-7 2xl:grid-cols-[0.94fr,1.06fr]">
         <Card className="rounded-[32px]">
           <form className="space-y-5" onSubmit={handleSearch}>
             <div>
@@ -200,7 +209,7 @@ export default function LawyersPage() {
           </form>
         </Card>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-2">
           {rankedLawyers.map((lawyer) => (
             <Card className="rounded-[30px] p-5" key={lawyer.id}>
               <div className="space-y-5">

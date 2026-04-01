@@ -1,6 +1,6 @@
 import { createContext, startTransition, useContext, useEffect, useState } from "react";
 
-import { getSessionPayload, logoutUser } from "@/lib/api";
+import { getSessionPayload, logoutUser, setLanguagePreference } from "@/lib/api";
 
 const defaultSession = {
   authenticated: false,
@@ -14,6 +14,7 @@ const SessionContext = createContext({
   sessionError: "",
   backendReachable: true,
   refreshSession: async () => defaultSession,
+  updateLanguage: async () => {},
   signOut: async () => {}
 });
 
@@ -53,6 +54,11 @@ export function SessionProvider({ children }) {
     await refreshSession();
   };
 
+  const updateLanguage = async (lang) => {
+    await setLanguagePreference(lang);
+    await refreshSession();
+  };
+
   useEffect(() => {
     refreshSession();
   }, []);
@@ -65,6 +71,7 @@ export function SessionProvider({ children }) {
         sessionError,
         backendReachable,
         refreshSession,
+        updateLanguage,
         signOut
       }}
     >

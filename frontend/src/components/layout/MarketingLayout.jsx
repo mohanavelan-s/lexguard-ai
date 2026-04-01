@@ -1,9 +1,11 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { Button } from "@/components/ui/Button";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { platformStats } from "@/data/mock";
 import { useSession } from "@/context/SessionContext";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -14,6 +16,12 @@ const navItems = [
 
 export function MarketingLayout() {
   const { session } = useSession();
+  const navLabels = useTranslatedText(navItems.map((item) => item.label));
+  const [productTagline, footerTitle, footerDescription] = useTranslatedText([
+    "Legal intelligence",
+    "Built for clarity under pressure.",
+    "LexGuard AI blends workflow design, legal intelligence, and trust-building UX into a single cloud-ready product surface."
+  ]);
 
   return (
     <div className="min-h-screen bg-transparent">
@@ -25,12 +33,12 @@ export function MarketingLayout() {
             </div>
             <div>
               <p className="font-display text-lg font-semibold text-foreground">LexGuard AI</p>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Legal intelligence</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">{productTagline}</p>
             </div>
           </Link>
 
           <nav className="hidden items-center gap-2 md:flex">
-            {navItems.map((item) => (
+            {navItems.map((item, index) => (
               <NavLink
                 className={({ isActive }) =>
                   cn(
@@ -41,12 +49,15 @@ export function MarketingLayout() {
                 key={item.href}
                 to={item.href}
               >
-                {item.label}
+                {navLabels[index]}
               </NavLink>
             ))}
           </nav>
 
           <div className="flex items-center gap-3">
+            <div className="hidden md:block">
+              <LanguageSwitcher />
+            </div>
             <ThemeToggle />
             <Link to={session.authenticated ? "/dashboard" : "/login"}>
               <Button size="sm" variant="secondary">
@@ -67,11 +78,8 @@ export function MarketingLayout() {
       <footer className="border-t border-border/50">
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr,0.8fr] lg:px-8">
           <div className="space-y-4">
-            <p className="font-display text-2xl font-semibold text-foreground">Built for clarity under pressure.</p>
-            <p className="max-w-xl text-sm leading-7 text-muted-foreground">
-              LexGuard AI blends workflow design, legal intelligence, and trust-building UX into a single cloud-ready
-              product surface.
-            </p>
+            <p className="font-display text-2xl font-semibold text-foreground">{footerTitle}</p>
+            <p className="max-w-xl text-sm leading-7 text-muted-foreground">{footerDescription}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {platformStats.map((stat) => (

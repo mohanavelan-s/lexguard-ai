@@ -51,6 +51,20 @@ export async function getSessionPayload() {
   return apiRequest("/api/session");
 }
 
+export async function setLanguagePreference(lang) {
+  return apiRequest("/set-language", {
+    method: "POST",
+    body: { lang }
+  });
+}
+
+export async function translateBatch(texts) {
+  return apiRequest("/translate-batch", {
+    method: "POST",
+    body: { texts }
+  });
+}
+
 export async function loginUser(credentials) {
   return apiRequest("/api/login", {
     method: "POST",

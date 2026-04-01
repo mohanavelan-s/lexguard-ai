@@ -1,14 +1,17 @@
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 import { formatRelativeTime, getRiskMeta } from "@/lib/utils";
 
 export function ActivityFeed({ items, title = "Recent activity" }) {
+  const [translatedTitle, translatedHeading] = useTranslatedText([title, "Operational history"]);
+
   return (
     <Card className="rounded-[32px]">
       <div className="space-y-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{title}</p>
-          <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Operational history</h3>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{translatedTitle}</p>
+          <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{translatedHeading}</h3>
         </div>
         <div className="space-y-4">
           {items.map((item) => {
