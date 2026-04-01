@@ -134,7 +134,17 @@ const LOCAL_TRANSLATIONS = {
 
 export function useTranslatedText(input) {
   const { session } = useSession();
-  const texts = useMemo(() => (Array.isArray(input) ? input : [input]).map((item) => item || ""), [input]);
+  const texts = useMemo(
+    () =>
+      (Array.isArray(input) ? input : [input]).map((item) => {
+        if (item === null || item === undefined) {
+          return "";
+        }
+
+        return String(item);
+      }),
+    [input]
+  );
   const signature = useMemo(() => JSON.stringify(texts), [texts]);
   const [translated, setTranslated] = useState(texts);
 
