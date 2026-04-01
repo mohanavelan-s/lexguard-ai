@@ -1,9 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Icon background: dark gradient -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="rectangle">
-    <gradient
-        android:startColor="#0A0F1A"
-        android:endColor="#1B2735"
-        android:angle="135" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:endColor="#1B2332"
+                android:startColor="#09101A" />
+        </shape>
+    </item>
+
+    <item
+        android:bottom="14dp"
+        android:left="14dp"
+        android:right="14dp"
+        android:top="14dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="26dp" />
+            <gradient
+                android:angle="135"
+                android:endColor="#0E1725"
+                android:startColor="#152133" />
+            <stroke
+                android:width="1dp"
+                android:color="#33506D5A" />
+        </shape>
+    </item>
+
+    <item
+        android:bottom="27dp"
+        android:left="27dp"
+        android:right="27dp"
+        android:top="27dp">
+        <shape android:shape="oval">
+            <gradient
+                android:centerColor="#33D3A14E"
+                android:endColor="#00D3A14E"
+                android:gradientRadius="48dp"
+                android:startColor="#59F4D390"
+                android:type="radial" />
+        </shape>
+    </item>
+</layer-list>
