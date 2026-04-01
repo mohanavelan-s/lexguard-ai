@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "LexGuardAI"
         // BuildConfig.SERVER_URL comes from -PlexguardServerUrl or LEXGUARD_SERVER_URL.
+        // The default points at the live Railway deployment so the APK no longer depends on ngrok.
         val SERVER_URL = BuildConfig.SERVER_URL
     }
 

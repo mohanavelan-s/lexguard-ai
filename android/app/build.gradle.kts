@@ -6,7 +6,7 @@ plugins {
 val lexguardServerUrl = (
     project.findProperty("lexguardServerUrl") as String?
         ?: System.getenv("LEXGUARD_SERVER_URL")
-        ?: "http://10.0.2.2:5000"
+        ?: "https://lexguard-ai-production-ab0a.up.railway.app"
 ).replace("\\", "\\\\").replace("\"", "\\\"")
 
 android {
@@ -17,8 +17,8 @@ android {
         applicationId = "com.lexguard.ai"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         buildConfigField("String", "SERVER_URL", "\"$lexguardServerUrl\"")
     }
 
