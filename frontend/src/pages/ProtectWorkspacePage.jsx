@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { InputField } from "@/components/ui/InputField";
 import { WorkflowHero } from "@/components/ui/WorkflowHero";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 import { activateProtectMode, sendSosSignal } from "@/lib/api";
 import { useUiStore } from "@/store/ui-store";
 
@@ -56,6 +57,71 @@ export default function ProtectWorkspacePage() {
   const timerRef = useRef(null);
   const voiceEnabledRef = useRef(false);
   const coordsRef = useRef({ lat: "0", lng: "0" });
+  const translatedFeedTexts = useTranslatedText(feed.map((entry) => entry.text));
+  const translatedStatus = useTranslatedText(status);
+  const translatedGeoStatus = useTranslatedText(geoStatus);
+  const translatedSosMessage = useTranslatedText(sosMessage || "Not sent yet.");
+  const translatedError = useTranslatedText(error);
+  const translatedQuickAdvisory = useTranslatedText(
+    quickGuidance?.action || quickGuidance?.message || "Run a quick guidance request to populate this panel with backend-ready emergency advice."
+  );
+  const translatedEmergencyState = useTranslatedText(active ? "Armed" : "Standby");
+  const translatedVoiceWatchState = useTranslatedText(voiceEnabled ? "Live" : "Off");
+  const [
+    controlCenterLabel,
+    emergencyStateTitle,
+    elapsedTimeLabel,
+    voiceWatchLabel,
+    gpsLocationLabel,
+    sosDeliveryLabel,
+    armProtectionLabel,
+    stopProtectionLabel,
+    enableVoiceWatchLabel,
+    disableVoiceWatchLabel,
+    refreshLocationLabel,
+    sendSosLabel,
+    voiceCommandPhrasesLabel,
+    voiceCommandText,
+    voiceNoticeLabel,
+    quickResponseLabel,
+    quickResponseTitle,
+    scenarioLabel,
+    generateGuidanceLabel,
+    preparingGuidanceLabel,
+    latestAdvisoryLabel,
+    liveTranscriptLabel,
+    recentEmergencyEventsLabel,
+    currentStatusLabel,
+    safetyNoteLabel,
+    safetyNoteText
+  ] = useTranslatedText([
+    "Control center",
+    "Emergency state",
+    "Elapsed time",
+    "Voice watch",
+    "GPS location",
+    "SOS delivery",
+    "Arm protection",
+    "Stop protection",
+    "Enable voice watch",
+    "Disable voice watch",
+    "Refresh location",
+    "Send SOS now",
+    "Voice command phrases",
+    'Say "protect me" to arm protection, and "stop protection" to end the session. Manual controls stay available if voice watch pauses.',
+    "Voice watch",
+    "Quick-response AI",
+    "Get a fast protect briefing",
+    "Scenario",
+    "Generate quick protect guidance",
+    "Preparing guidance...",
+    "Latest advisory",
+    "Live transcript",
+    "Recent emergency events",
+    "Current status",
+    "Safety note",
+    "LexGuard can support the flow, but emergencies still need direct help from local authorities, a trusted contact, or qualified legal counsel."
+  ]);
 
   const appendFeed = (speaker, text) => {
     setFeed((current) => [
@@ -284,10 +350,10 @@ export default function ProtectWorkspacePage() {
         actions={
           <div className="flex flex-wrap gap-3">
             <Button onClick={startProtection} type="button">
-              Arm protection
+              {armProtectionLabel}
             </Button>
             <Button onClick={stopProtection} type="button" variant="danger">
-              Stop protection
+              {stopProtectionLabel}
             </Button>
           </div>
         }
@@ -312,20 +378,20 @@ export default function ProtectWorkspacePage() {
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Control center</p>
-                  <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Emergency state</h3>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{controlCenterLabel}</p>
+                  <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{emergencyStateTitle}</h3>
                 </div>
-                <Badge variant={active ? "danger" : "neutral"}>{active ? "Armed" : "Standby"}</Badge>
+                <Badge variant={active ? "danger" : "neutral"}>{translatedEmergencyState}</Badge>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
-                  <p className="text-sm text-muted-foreground">Elapsed time</p>
+                  <p className="text-sm text-muted-foreground">{elapsedTimeLabel}</p>
                   <p className="mt-2 font-display text-3xl font-semibold text-foreground">{formatElapsed(timerSeconds)}</p>
                 </div>
                 <div className="rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
-                  <p className="text-sm text-muted-foreground">Voice watch</p>
-                  <p className="mt-2 font-display text-3xl font-semibold text-foreground">{voiceEnabled ? "Live" : "Off"}</p>
+                  <p className="text-sm text-muted-foreground">{voiceWatchLabel}</p>
+                  <p className="mt-2 font-display text-3xl font-semibold text-foreground">{translatedVoiceWatchState}</p>
                 </div>
               </div>
 
@@ -333,15 +399,15 @@ export default function ProtectWorkspacePage() {
                 <div className="flex items-start gap-3 rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
                   <LocateFixed className="mt-1 h-5 w-5 text-brand" />
                   <div>
-                    <p className="font-medium text-foreground">GPS location</p>
-                    <p className="mt-1 text-sm leading-7 text-muted-foreground">{geoStatus}</p>
+                    <p className="font-medium text-foreground">{gpsLocationLabel}</p>
+                    <p className="mt-1 text-sm leading-7 text-muted-foreground">{translatedGeoStatus}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3 rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
                   <Siren className="mt-1 h-5 w-5 text-brand" />
                   <div>
-                    <p className="font-medium text-foreground">SOS delivery</p>
-                    <p className="mt-1 text-sm leading-7 text-muted-foreground">{sosMessage || "Not sent yet."}</p>
+                    <p className="font-medium text-foreground">{sosDeliveryLabel}</p>
+                    <p className="mt-1 text-sm leading-7 text-muted-foreground">{translatedSosMessage}</p>
                   </div>
                 </div>
               </div>
@@ -356,35 +422,55 @@ export default function ProtectWorkspacePage() {
               <div className="flex flex-wrap gap-3">
                 <Button onClick={toggleVoiceCommands} type="button" variant="secondary">
                   <Mic className="h-4 w-4" />
-                  {voiceEnabled ? "Disable voice watch" : "Enable voice watch"}
+                  {voiceEnabled ? disableVoiceWatchLabel : enableVoiceWatchLabel}
                 </Button>
                 <Button onClick={() => captureLocation(false)} type="button" variant="secondary">
                   <LocateFixed className="h-4 w-4" />
-                  Refresh location
+                  {refreshLocationLabel}
                 </Button>
                 <Button onClick={() => sendSos(coordsRef.current.lat, coordsRef.current.lng)} type="button" variant="outline">
                   <Siren className="h-4 w-4" />
-                  Send SOS now
+                  {sendSosLabel}
                 </Button>
               </div>
 
-              <div className="rounded-[28px] border border-warning/20 bg-warning/10 px-4 py-4 text-sm leading-7 text-warning-foreground">
-                Voice commands supported: say <strong>protect me</strong> to arm, or <strong>stop protection</strong> to end the session.
+              <div className="rounded-[30px] border border-warning/25 bg-gradient-to-br from-warning/14 via-warning/8 to-transparent p-5 shadow-soft">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-warning/16 text-warning">
+                    <Mic className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{voiceCommandPhrasesLabel}</p>
+                    <p className="mt-2 text-sm leading-7 text-foreground/85 dark:text-amber-50/92">{voiceCommandText}</p>
+                  </div>
+                </div>
               </div>
 
-              {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
+              {error ? (
+                <div className="rounded-[30px] border border-danger/30 bg-gradient-to-r from-danger/16 to-danger/8 p-4 shadow-soft">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-danger/16 text-danger-foreground">
+                      <AlertTriangle className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-danger-foreground">{voiceNoticeLabel}</p>
+                      <p className="mt-1 text-sm leading-7 text-danger-foreground/92">{translatedError}</p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </Card>
 
           <Card className="rounded-[32px]">
             <div className="space-y-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Quick-response AI</p>
-                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Get a fast protect briefing</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{quickResponseLabel}</p>
+                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{quickResponseTitle}</h3>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Scenario</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{scenarioLabel}</label>
                 <InputField onChange={(event) => setKeyword(event.target.value)} value={keyword} />
               </div>
 
@@ -403,14 +489,12 @@ export default function ProtectWorkspacePage() {
 
               <Button disabled={guidanceLoading} onClick={handleQuickGuidance} type="button">
                 <Radio className="h-4 w-4" />
-                {guidanceLoading ? "Preparing guidance..." : "Generate quick protect guidance"}
+                {guidanceLoading ? preparingGuidanceLabel : generateGuidanceLabel}
               </Button>
 
               <div className="rounded-[28px] border border-border/70 bg-white/70 p-4 dark:bg-white/[0.03]">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Latest advisory</p>
-                <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  {quickGuidance?.action || quickGuidance?.message || "Run a quick guidance request to populate this panel with backend-ready emergency advice."}
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{latestAdvisoryLabel}</p>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">{translatedQuickAdvisory}</p>
               </div>
             </div>
           </Card>
@@ -420,14 +504,14 @@ export default function ProtectWorkspacePage() {
           <div className="space-y-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Live transcript</p>
-                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Recent emergency events</h3>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{liveTranscriptLabel}</p>
+                <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{recentEmergencyEventsLabel}</h3>
               </div>
               <Badge variant="neutral">{feed.length} events</Badge>
             </div>
 
             <div className="pretty-scrollbar max-h-[760px] space-y-3 overflow-y-auto pr-1">
-              {feed.map((entry) => (
+              {feed.map((entry, index) => (
                 <div
                   className={`rounded-[28px] border px-4 py-4 ${
                     entry.speaker === "system"
@@ -439,7 +523,7 @@ export default function ProtectWorkspacePage() {
                   key={entry.id}
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{entry.speaker}</p>
-                  <p className="mt-2 text-sm leading-7 text-foreground">{entry.text}</p>
+                  <p className="mt-2 text-sm leading-7 text-foreground">{translatedFeedTexts[index]}</p>
                 </div>
               ))}
             </div>
@@ -448,8 +532,8 @@ export default function ProtectWorkspacePage() {
               <div className="flex items-start gap-3">
                 <ShieldAlert className="mt-1 h-5 w-5 text-brand" />
                 <div>
-                  <p className="font-medium text-foreground">Current status</p>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{status}</p>
+                  <p className="font-medium text-foreground">{currentStatusLabel}</p>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{translatedStatus}</p>
                 </div>
               </div>
             </div>
@@ -458,10 +542,8 @@ export default function ProtectWorkspacePage() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="mt-1 h-5 w-5 text-danger-foreground" />
                 <div>
-                  <p className="font-medium text-danger-foreground">Safety note</p>
-                  <p className="mt-2 text-sm leading-7 text-danger-foreground/90">
-                    LexGuard can support the flow, but emergencies still need direct help from local authorities, a trusted contact, or qualified legal counsel.
-                  </p>
+                  <p className="font-medium text-danger-foreground">{safetyNoteLabel}</p>
+                  <p className="mt-2 text-sm leading-7 text-danger-foreground/90">{safetyNoteText}</p>
                 </div>
               </div>
             </div>

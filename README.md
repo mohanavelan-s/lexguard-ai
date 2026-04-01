@@ -82,6 +82,9 @@ Recommended Railway service variables:
 - `LEXGUARD_DATA_DIR=/app/data`
 - `LEXGUARD_UPLOAD_DIR=/app/data/uploads`
 - `RESEND_API_KEY`, `TWILIO_SID`, `TWILIO_AUTH`, `TWILIO_PHONE`, `MY_PHONE` as needed
+- For case lookup emails, also set:
+  - `RESEND_FROM_EMAIL` to a verified Resend sender such as `LexGuard AI <alerts@your-domain.com>`
+  - `RESEND_REPLY_TO` if you want replies routed to a support inbox
 
 ### Supabase Postgres
 
@@ -111,6 +114,8 @@ Create a `.env` file from `.env.example` and set:
 - `LEXGUARD_DATA_DIR` and `LEXGUARD_UPLOAD_DIR` if you want uploads on a mounted volume
 - `SESSION_COOKIE_SECURE=1` in production
 - `RESEND_API_KEY` for case email notifications
+- `RESEND_FROM_EMAIL` for a verified Resend sender address
+- `RESEND_REPLY_TO` if case emails should reply to a support inbox
 - `TWILIO_SID`, `TWILIO_AUTH`, `TWILIO_PHONE`, `MY_PHONE` for SOS SMS
 
 ## Android app

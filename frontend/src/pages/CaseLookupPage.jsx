@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { InputField } from "@/components/ui/InputField";
 import { WorkflowHero } from "@/components/ui/WorkflowHero";
 import { useSession } from "@/context/SessionContext";
+import { useTranslatedText } from "@/hooks/useTranslatedText";
 import { lookupCase } from "@/lib/api";
 import { useUiStore } from "@/store/ui-store";
 
@@ -46,6 +47,46 @@ export default function CaseLookupPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const translatedDemoStatuses = useTranslatedText(demoCases.map((item) => item.status));
+  const translatedDemoNotes = useTranslatedText(demoCases.map((item) => item.note));
+  const translatedError = useTranslatedText(error);
+  const translatedNotificationMessage = useTranslatedText(result?.notification_message || "");
+  const translatedResultStatus = useTranslatedText(result?.status_label || result?.status || "");
+  const [
+    lookupFormLabel,
+    searchTitle,
+    caseTypeLabel,
+    caseNumberLabel,
+    filingYearLabel,
+    courtComplexLabel,
+    checkCaseStatusLabel,
+    checkingStatusLabel,
+    loadDemoInputLabel,
+    resultPanelLabel,
+    latestLookupLabel,
+    trackedCaseLabel,
+    nextHearingLabel,
+    notificationStatusLabel,
+    demoQuickReferencesLabel,
+    sampleCaseNumbersLabel
+  ] = useTranslatedText([
+    "Lookup form",
+    "Search by case details",
+    "Case type",
+    "Case number",
+    "Filing year",
+    "Court complex",
+    "Check case status",
+    "Checking status...",
+    "Load demo input",
+    "Result panel",
+    "Latest lookup",
+    "Tracked case",
+    "Next hearing",
+    "Notification status",
+    "Demo quick references",
+    "Sample case numbers"
+  ]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -105,7 +146,7 @@ export default function CaseLookupPage() {
         ]}
         icon={SearchCheck}
         stats={[
-          { label: "Latest status", value: result?.status || "Awaiting lookup" },
+          { label: "Latest status", value: result?.status_label || result?.status || "Awaiting lookup" },
           { label: "Email delivery", value: result?.email_sent ? "Sent" : session.authenticated ? "Ready" : "Disabled" }
         ]}
         title="Track hearing progress without leaving the workspace"
@@ -115,13 +156,13 @@ export default function CaseLookupPage() {
         <Card className="rounded-[32px]">
           <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Lookup form</p>
-              <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Search by case details</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{lookupFormLabel}</p>
+              <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{searchTitle}</h3>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Case type</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{caseTypeLabel}</label>
                 <select
                   className="h-12 w-full rounded-2xl border border-border/70 bg-white/80 px-4 text-sm text-foreground outline-none transition focus:border-brand/40 focus:ring-2 focus:ring-brand/10 dark:bg-white/[0.03]"
                   onChange={(event) => setForm((current) => ({ ...current, caseType: event.target.value }))}
@@ -138,7 +179,7 @@ export default function CaseLookupPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Case number</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{caseNumberLabel}</label>
                 <InputField
                   onChange={(event) => setForm((current) => ({ ...current, caseNumber: event.target.value }))}
                   placeholder="1234"
@@ -146,7 +187,7 @@ export default function CaseLookupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Filing year</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{filingYearLabel}</label>
                 <InputField
                   maxLength={4}
                   onChange={(event) => setForm((current) => ({ ...current, filingYear: event.target.value }))}
@@ -155,7 +196,7 @@ export default function CaseLookupPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Court complex</label>
+                <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{courtComplexLabel}</label>
                 <InputField
                   onChange={(event) => setForm((current) => ({ ...current, courtComplex: event.target.value }))}
                   placeholder="Chennai District Court"
@@ -164,18 +205,18 @@ export default function CaseLookupPage() {
               </div>
             </div>
 
-            {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{error}</div> : null}
+            {error ? <div className="rounded-3xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm text-danger-foreground">{translatedError}</div> : null}
 
             <div className="flex flex-wrap gap-3">
               <Button disabled={loading} type="submit">
-                {loading ? "Checking status..." : "Check case status"}
+                {loading ? checkingStatusLabel : checkCaseStatusLabel}
               </Button>
               <Button
                 onClick={() => setForm({ ...initialForm, caseNumber: "1234", filingYear: "2026", courtComplex: "Chennai District Court" })}
                 type="button"
                 variant="secondary"
               >
-                Load demo input
+                {loadDemoInputLabel}
               </Button>
             </div>
           </form>
@@ -186,10 +227,10 @@ export default function CaseLookupPage() {
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">Result panel</p>
-                  <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">Latest lookup</h3>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-brand/80">{resultPanelLabel}</p>
+                  <h3 className="mt-2 font-display text-3xl font-semibold text-foreground">{latestLookupLabel}</h3>
                 </div>
-                {result?.status ? <Badge variant={getBadgeVariant(result.status)}>{result.status}</Badge> : null}
+                {result?.status ? <Badge variant={getBadgeVariant(result.status)}>{translatedResultStatus}</Badge> : null}
               </div>
 
               {!result ? (
@@ -206,7 +247,7 @@ export default function CaseLookupPage() {
                       <div className="flex items-center gap-3">
                         <SearchCheck className="h-5 w-5 text-brand" />
                         <div>
-                          <p className="text-sm text-muted-foreground">Tracked case</p>
+                          <p className="text-sm text-muted-foreground">{trackedCaseLabel}</p>
                           <p className="font-medium text-foreground">Case #{form.caseNumber}</p>
                         </div>
                       </div>
@@ -215,7 +256,7 @@ export default function CaseLookupPage() {
                       <div className="flex items-center gap-3">
                         <CalendarClock className="h-5 w-5 text-brand" />
                         <div>
-                          <p className="text-sm text-muted-foreground">Next hearing</p>
+                          <p className="text-sm text-muted-foreground">{nextHearingLabel}</p>
                           <p className="font-medium text-foreground">{result.next_hearing}</p>
                         </div>
                       </div>
@@ -226,9 +267,9 @@ export default function CaseLookupPage() {
                     <div className="flex items-start gap-3">
                       <MailCheck className="mt-1 h-5 w-5 text-brand" />
                       <div>
-                        <p className="font-medium text-foreground">Notification status</p>
+                        <p className="font-medium text-foreground">{notificationStatusLabel}</p>
                         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                          {result.notification_message ||
+                          {translatedNotificationMessage ||
                             (result.email_sent
                               ? `An email notification was sent to ${session.user?.email || "the signed-in user"}.`
                               : "The lookup was saved, but email delivery is not configured for this deployment yet.")}
@@ -253,12 +294,12 @@ export default function CaseLookupPage() {
                   <ShieldAlert className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Demo quick references</p>
-                  <h3 className="font-display text-3xl font-semibold text-foreground">Sample case numbers</h3>
+                  <p className="text-sm text-muted-foreground">{demoQuickReferencesLabel}</p>
+                  <h3 className="font-display text-3xl font-semibold text-foreground">{sampleCaseNumbersLabel}</h3>
                 </div>
               </div>
               <div className="grid gap-3">
-                {demoCases.map((item) => (
+                {demoCases.map((item, index) => (
                   <button
                     className="flex items-center justify-between rounded-3xl border border-border/70 bg-white/70 px-4 py-4 text-left transition hover:border-brand/30 hover:bg-brand/5 dark:bg-white/[0.03]"
                     key={item.number}
@@ -272,9 +313,9 @@ export default function CaseLookupPage() {
                   >
                     <div>
                       <p className="font-medium text-foreground">Case {item.number}</p>
-                      <p className="mt-1 text-sm text-muted-foreground">{item.note}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{translatedDemoNotes[index]}</p>
                     </div>
-                    <Badge variant={getBadgeVariant(item.status)}>{item.status}</Badge>
+                    <Badge variant={getBadgeVariant(item.status)}>{translatedDemoStatuses[index]}</Badge>
                   </button>
                 ))}
               </div>

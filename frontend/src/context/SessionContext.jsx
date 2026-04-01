@@ -11,6 +11,7 @@ const defaultSession = {
 const SessionContext = createContext({
   session: defaultSession,
   sessionLoading: true,
+  languageUpdating: false,
   sessionError: "",
   backendReachable: true,
   refreshSession: async () => defaultSession,
@@ -21,6 +22,7 @@ const SessionContext = createContext({
 export function SessionProvider({ children }) {
   const [session, setSession] = useState(defaultSession);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const [languageUpdating, setLanguageUpdating] = useState(false);
   const [sessionError, setSessionError] = useState("");
   const [backendReachable, setBackendReachable] = useState(true);
 
@@ -55,8 +57,43 @@ export function SessionProvider({ children }) {
   };
 
   const updateLanguage = async (lang) => {
-    await setLanguagePreference(lang);
-    await refreshSession();
+    if (!lang || lang === session.lang) {
+      return { success: true, lang: session.lang || "en" };
+    }
+
+    const previousLang = session.lang || "en";
+    startTransition(() => {
+      setSession((current) => ({
+        ...current,
+        lang
+      }));
+    });
+    setLanguageUpdating(true);
+    setSessionError("");
+
+    try {
+      const payload = await setLanguagePreference(lang);
+      startTransition(() => {
+        setSession((current) => ({
+          ...current,
+          lang: payload?.lang || lang
+        }));
+      });
+      setBackendReachable(true);
+      return payload;
+    } catch (error) {
+      startTransition(() => {
+        setSession((current) => ({
+          ...current,
+          lang: previousLang
+        }));
+      });
+      setBackendReachable(false);
+      setSessionError("Language preferences could not be updated right now.");
+      throw error;
+    } finally {
+      setLanguageUpdating(false);
+    }
   };
 
   useEffect(() => {
@@ -68,6 +105,7 @@ export function SessionProvider({ children }) {
       value={{
         session,
         sessionLoading,
+        languageUpdating,
         sessionError,
         backendReachable,
         refreshSession,

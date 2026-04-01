@@ -1,9 +1,9 @@
 import os
 import io
 import re as re_module
+from functools import lru_cache
 from pathlib import Path
 import requests  # 🔴 REQUIRED: Run 'pip install requests'
-import resend
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_file, send_from_directory
 from datetime import datetime
@@ -138,7 +138,7 @@ DEMO_CASES = {
 print(f"[CASE-LOOKUP] Database ready ({get_database_backend()})")
 print(f"[STORAGE] Upload directory ready at {UPLOAD_DIR}")
 
-# --- EMAIL NOTIFICATION (Resend SDK) ---
+# --- EMAIL NOTIFICATION (Resend HTTP API) ---
 # ============================================================
 # Set RESEND_API_KEY env var before running:
 #   PowerShell: $env:RESEND_API_KEY="re_xxxxxxxxxxxx"
@@ -146,23 +146,63 @@ print(f"[STORAGE] Upload directory ready at {UPLOAD_DIR}")
 #   Linux/Mac:  export RESEND_API_KEY=re_xxxxxxxxxxxx
 # GLOBAL key — one key for all users. Do NOT generate per user.
 # ============================================================
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-resend.api_key = RESEND_API_KEY
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "").strip()
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "").strip()
+RESEND_REPLY_TO = os.getenv("RESEND_REPLY_TO", "").strip()
+RESEND_API_URL = "https://api.resend.com/emails"
+ALLOWED_LANGUAGES = ("en", "hi", "ta")
 
-SENDER_EMAIL = "LexGuard AI <onboarding@resend.dev>"
+
+def _get_resend_sender():
+    if not RESEND_API_KEY:
+        return None, "Email delivery is unavailable until RESEND_API_KEY is configured."
+
+    if not RESEND_FROM_EMAIL:
+        return None, "Email delivery is unavailable until RESEND_FROM_EMAIL is configured with a verified Resend sender."
+
+    return RESEND_FROM_EMAIL, ""
+
+
+def _extract_resend_error_message(response):
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = {}
+
+    raw_message = payload.get("message") or payload.get("error") or response.text or f"HTTP {response.status_code}"
+    lowered = raw_message.lower()
+
+    if "verify" in lowered and "domain" in lowered:
+        return "Email delivery failed because the sending domain is not verified in Resend. Update RESEND_FROM_EMAIL to a verified sender."
+
+    if "sender" in lowered and "verify" in lowered:
+        return "Email delivery failed because the sender address is not verified in Resend. Update RESEND_FROM_EMAIL to a verified sender."
+
+    if response.status_code == 403 and "resend.dev" in lowered:
+        return "Email delivery failed because the test sender cannot deliver to this address. Set RESEND_FROM_EMAIL to a verified domain sender."
+
+    if response.status_code in (401, 403):
+        return "Email delivery was rejected by Resend. Check RESEND_API_KEY and RESEND_FROM_EMAIL."
+
+    return f"Email delivery failed: {raw_message}"
+
 
 def send_case_email(to_email, case_number, status, next_hearing):
-    """Send case status email via Resend SDK. Retries up to 3 times for rate limits."""
+    """Send case status email via Resend. Returns a success/message dict."""
     import time
 
-    if not RESEND_API_KEY:
-        print("[EMAIL] Resend API key not configured")
-        return False
+    sender_email, config_message = _get_resend_sender()
+    if not sender_email:
+        print(f"[EMAIL] {config_message}")
+        return {"success": False, "message": config_message, "reason": "configuration"}
+
+    if not to_email:
+        return {"success": False, "message": "No destination email is available for this case lookup.", "reason": "recipient"}
 
     print(f"[EMAIL] Attempting to send email to: {to_email}")
 
     email_payload = {
-        "from": SENDER_EMAIL,
+        "from": sender_email,
         "to": [to_email],
         "subject": "LexGuard Case Status Update",
         "html": f"""
@@ -175,47 +215,42 @@ def send_case_email(to_email, case_number, status, next_hearing):
         """
     }
 
+    if RESEND_REPLY_TO:
+        email_payload["reply_to"] = RESEND_REPLY_TO
+
+    headers = {
+        "Authorization": f"Bearer {RESEND_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    retryable_statuses = {408, 409, 425, 429, 500, 502, 503, 504}
     max_retries = 3
+
     for attempt in range(1, max_retries + 1):
         try:
-            # Re-set API key on each attempt (guards against SDK state issues)
-            resend.api_key = RESEND_API_KEY
-            response = resend.Emails.send(email_payload)
+            response = requests.post(RESEND_API_URL, json=email_payload, headers=headers, timeout=20)
 
-            # Extract email ID from response
-            email_id = None
-            if isinstance(response, dict):
-                if response.get("statusCode") or response.get("error"):
-                    err_msg = response.get("message") or response.get("error") or str(response)
-                    print(f"[EMAIL] Attempt {attempt}/{max_retries} — API error: {err_msg}")
-                    if attempt < max_retries:
-                        time.sleep(attempt * 2)  # backoff: 2s, 4s
-                        continue
-                    return False
-                email_id = response.get("id")
-            elif hasattr(response, "id"):
-                email_id = response.id
-
-            if email_id:
+            if response.ok:
+                payload = response.json()
+                email_id = payload.get("id")
                 print(f"[EMAIL] ✅ Sent to {to_email} — ID: {email_id}")
-                return True
-            else:
-                print(f"[EMAIL] Attempt {attempt}/{max_retries} — no ID in response: {response}")
-                if attempt < max_retries:
-                    time.sleep(attempt * 2)
-                    continue
-                return False
+                return {"success": True, "message": f"Email notification sent to {to_email}.", "reason": "sent"}
 
-        except Exception as e:
-            err_str = str(e).lower()
-            print(f"[EMAIL] Attempt {attempt}/{max_retries} — exception: {e}")
-            # Retry on rate limit or transient errors
-            if attempt < max_retries and ("rate" in err_str or "429" in err_str or "timeout" in err_str or "connection" in err_str):
+            error_message = _extract_resend_error_message(response)
+            print(f"[EMAIL] Attempt {attempt}/{max_retries} — API error: {error_message}")
+            if attempt < max_retries and response.status_code in retryable_statuses:
                 time.sleep(attempt * 2)
                 continue
-            return False
+            return {"success": False, "message": error_message, "reason": "provider"}
+        except requests.RequestException as exc:
+            error_message = f"Email delivery request failed: {exc}"
+            print(f"[EMAIL] Attempt {attempt}/{max_retries} — exception: {exc}")
+            if attempt < max_retries:
+                time.sleep(attempt * 2)
+                continue
+            return {"success": False, "message": error_message, "reason": "network"}
 
-    return False
+    return {"success": False, "message": "Email delivery failed after multiple attempts.", "reason": "unknown"}
 
 # 🟢 TWILIO CONFIGURATION
 TWILIO_SID = os.getenv("TWILIO_SID", "")
@@ -336,7 +371,15 @@ def api_lawyers():
 @app.route("/api/protect", methods=["POST"])
 def api_protect():
     data = request.get_json() or {}
-    return jsonify(protect_me(data.get("keyword", "")))
+    result = protect_me(data.get("keyword", ""))
+    lang = session.get("lang", "en")
+
+    if lang != "en":
+        for key in ("status", "message", "action"):
+            if result.get(key):
+                result[key] = translate_text(result[key], lang)
+
+    return jsonify(result)
 
 @app.route("/save-audio", methods=["POST"])
 def save_audio():
@@ -643,28 +686,32 @@ def submit_case():
     email_sent = False
     notification_email = None
     notification_message = "Case status saved successfully."
+    lang = session.get("lang", "en")
     try:
         user = get_user_by_id(session["user_id"])
         if user:
             notification_email = user["email"]
-            email_sent = send_case_email(user["email"], case_number, status, next_hearing)
-            if email_sent:
-                notification_message = f"Email notification sent to {user['email']}."
-            elif RESEND_API_KEY:
-                notification_message = "Case status saved, but email delivery failed. Please try again later."
-            else:
-                notification_message = "Case status saved. Email delivery is unavailable until RESEND_API_KEY is configured."
+            email_result = send_case_email(user["email"], case_number, status, next_hearing)
+            email_sent = bool(email_result.get("success"))
+            notification_message = email_result.get("message") or notification_message
     except Exception as exc:
         print(f"[CASE-LOOKUP ERROR] Email lookup failed: {exc}")
         notification_message = "Case status saved, but email delivery failed due to a notification error."
 
+    translated_notification_message = notification_message
+    translated_status_label = status
+    if lang != "en":
+        translated_notification_message = translate_text(notification_message, lang)
+        translated_status_label = translate_text(status, lang)
+
     return jsonify({
         "success": True,
         "status": status,
+        "status_label": translated_status_label,
         "next_hearing": next_hearing or "Not Scheduled",
         "email_sent": email_sent,
         "notification_email": notification_email,
-        "notification_message": notification_message
+        "notification_message": translated_notification_message
     })
 
 
@@ -773,14 +820,23 @@ def api_settings():
 # Translation utility
 translator = Translator()
 
+
+@lru_cache(maxsize=1024)
+def _translate_text_cached(text, target_lang):
+    translated = translator.translate(text, dest=target_lang)
+    return translated.text
+
+
 def translate_text(text, target_lang):
     """Translate text to target language. Returns original on failure."""
-    if target_lang == "en":
+    text = "" if text is None else str(text)
+
+    if target_lang == "en" or not text.strip():
         return text
+
     try:
-        translated = translator.translate(text, dest=target_lang)
-        return translated.text
-    except:
+        return _translate_text_cached(text, target_lang)
+    except Exception:
         return text
 
 
@@ -789,7 +845,7 @@ def set_language():
     """Store selected language in session."""
     data = request.get_json() or {}
     lang = data.get("lang", "en")
-    if lang in ("en", "hi", "ta"):
+    if lang in ALLOWED_LANGUAGES:
         session["lang"] = lang
     return jsonify({"success": True, "lang": session.get("lang", "en")})
 
@@ -804,18 +860,23 @@ def get_lang():
 def translate_batch():
     """Translate an array of text strings to the session language."""
     data = request.get_json() or {}
-    texts = data.get("texts", [])
+    texts = ["" if item is None else str(item) for item in data.get("texts", [])]
     lang = session.get("lang", "en")
 
     if lang == "en" or not texts:
         return jsonify({"translations": texts})
 
+    cache = {}
     translated = []
     for text in texts:
-        if text and text.strip():
-            translated.append(translate_text(text, lang))
-        else:
+        if not text.strip():
             translated.append(text)
+            continue
+
+        if text not in cache:
+            cache[text] = translate_text(text, lang)
+
+        translated.append(cache[text])
 
     return jsonify({"translations": translated})
 
